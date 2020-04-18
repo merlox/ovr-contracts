@@ -19,5 +19,8 @@
   "bugs": {
     "url": "https://github.com/merlox/ovr-contracts/issues"
   },
-  "homepage": "https://github.com/merlox/ovr-contracts#readme"
+  "homepage": "https://github.com/merlox/ovr-contracts#readme",
+  "dependencies": {
+    "@truffle/hdwallet-provider": "^1.0.34"
+  }
 }
