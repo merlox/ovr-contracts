@@ -1,0 +1,23 @@
+{
+  "name": "ovr-contracts",
+  "version": "1.0.0",
+  "description": "",
+  "main": "truffle-config.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/merlox/ovr-contracts.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/merlox/ovr-contracts/issues"
+  },
+  "homepage": "https://github.com/merlox/ovr-contracts#readme"
+}
