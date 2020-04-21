@@ -2,6 +2,7 @@ pragma solidity ^0.5.0;
 
 import '@openzeppelin/contracts/math/SafeMath.sol';
 import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
+import '@openzeppelin/contracts/lifecycle/Pausable.sol';
 
 contract Ownable {
     address payable public owner;
@@ -31,7 +32,7 @@ contract Ownable {
 /// No need to use oracles, the price will be fixed and there will be a table for:
 ///  1 ETH -> X tokens
 ///  1 USD -> X tokens (for those 3 ERC20 tokens since they are stablecoins)
-contract TokenBuy is Ownable {
+contract TokenBuy is Ownable, Pausable {
     using SafeMath for uint256;
     address public daiToken = 0x6B175474E89094C44Da98b954EedeAC495271d0F;
     address public usdcToken = 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48;
@@ -54,7 +55,7 @@ contract TokenBuy is Ownable {
     }
 
     /// To set the price per token for the given currency used as payment
-    function setTokenPrices(uint256 _tokensPerEth, uint256 _tokensPerUsd) public {
+    function setTokenPrices(uint256 _tokensPerEth, uint256 _tokensPerUsd) public whenNotPaused {
         require(_tokensPerEth != 0, "The ETH price can't be zero");
         require(_tokensPerUsd != 0, "The token price can't be zero");
         tokensPerEth = _tokensPerEth;
@@ -62,7 +63,8 @@ contract TokenBuy is Ownable {
     }
 
     /// To buy tokens in ETH the payment will be received in the msg.value
-    function buyTokensWithEth() public payable pricesMustBeSet {
+    function buyTokensWithEth() public payable pricesMustBeSet whenNotPaused {
+        require(msg.value > 0, "You must send a value to buy tokens with ETH");
         // Check how much value has been sent and send the corresponding value
         uint256 tokensToBuy = msg.value.mul(tokensPerEth);
         IERC20(ovrToken).transfer(msg.sender, tokensToBuy);
@@ -72,7 +74,7 @@ contract TokenBuy is Ownable {
     /// To buy tokens in USDT the user must first approve an exceeding or equal amount of USDT tokens by the price to this contract
     /// The function checks your approval and automatically calculates how many tokens to extract
     /// @param _tokensToBuy is the number of tokens you want to get
-    function buyTokensWithUsdt(uint256 _tokensToBuy) public pricesMustBeSet {
+    function buyTokensWithUsdt(uint256 _tokensToBuy) public pricesMustBeSet whenNotPaused {
         // Check your approval first
         uint256 allowance = IERC20(usdtToken).allowance(msg.sender, address(this));
         uint256 paymentRequiredInUsdt = _tokensToBuy.div(tokensPerUsd);
@@ -86,7 +88,7 @@ contract TokenBuy is Ownable {
     /// To buy tokens in USDC the user must first approve an exceeding or equal amount of USDC tokens by the price to this contract
     /// The function checks your approval and automatically calculates how many tokens to extract
     /// @param _tokensToBuy is the number of tokens you want to get
-    function buyTokensWithUsdc(uint256 _tokensToBuy) public pricesMustBeSet {
+    function buyTokensWithUsdc(uint256 _tokensToBuy) public pricesMustBeSet whenNotPaused {
         // Check your approval first
         uint256 allowance = IERC20(usdcToken).allowance(msg.sender, address(this));
         uint256 paymentRequiredInUsdc = _tokensToBuy.div(tokensPerUsd);
@@ -100,7 +102,7 @@ contract TokenBuy is Ownable {
     /// To buy tokens in DAI the user must first approve an exceeding or equal amount of DAI tokens by the price to this contract
     /// The function checks your approval and automatically calculates how many tokens to extract
     /// @param _tokensToBuy is the number of tokens you want to get
-    function buyTokensWithDai(uint256 _tokensToBuy) public pricesMustBeSet {
+    function buyTokensWithDai(uint256 _tokensToBuy) public pricesMustBeSet whenNotPaused {
         // Check your approval first
         uint256 allowance = IERC20(daiToken).allowance(msg.sender, address(this));
         uint256 paymentRequiredInDai = _tokensToBuy.div(tokensPerUsd);
@@ -112,12 +114,12 @@ contract TokenBuy is Ownable {
     }
 
     /// To extract the tokens that may have been sent to this contract by accident
-    function extractTokens(address _tokenToExtract, uint256 _amount) public onlyOwner {
+    function extractTokens(address _tokenToExtract, uint256 _amount) public onlyOwner whenNotPaused {
         IERC20(_tokenToExtract).transfer(owner, _amount);
     }
 
     /// To extract the ether stored in this contract
-    function extractEth() public onlyOwner {
+    function extractEth() public onlyOwner whenNotPaused {
         owner.transfer(address(this).balance);
     }
 
