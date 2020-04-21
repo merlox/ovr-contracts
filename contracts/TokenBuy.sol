@@ -2,7 +2,7 @@ pragma solidity 0.5.0;
 
 import '@openzeppelin/contracts/ownership/Ownable.sol';
 import '@openzeppelin/contracts/math/SafeMath.sol';
-import '@openzeppelin/token/ERC20/IERC20.sol';
+import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 
 /// The contract to purchase OVR Tokens 
 /// Users will send ETH, DAI, USDC or USDT to this contract and receive X tokens in return based on a custom price
