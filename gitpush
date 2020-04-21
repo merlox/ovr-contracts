@@ -1,4 +1,0 @@
-#!/bin/bash
-# If you use && the entire command is reverted if anything fails
-
-git add . && git commit -m "$1" && git push origin master
