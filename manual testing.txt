@@ -1,0 +1,7 @@
+- The setTokenPrices() function should work properly
+- The buyTokensWithEth() should give you the right amount of tokens
+- The buyTokensWithUsdt() should give you the right amount of tokens
+- The buyTokensWithUsdt() should give you the right amount of tokens
+- The buyTokensWithDai() should give you the right amount of tokens
+- The extractTokens() function should work with all token addresses
+- The extractEth() function should work
