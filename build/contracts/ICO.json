@@ -4,22 +4,22 @@
   "metadata": "{\"compiler\":{\"version\":\"0.5.11+commit.c082d0b4\"},\"language\":\"Solidity\",\"output\":{\"abi\":[],\"devdoc\":{\"methods\":{}},\"userdoc\":{\"methods\":{},\"notice\":\"Also handles land sells and purchases for people that want to exchange their land once they got it\"}},\"settings\":{\"compilationTarget\":{\"/C/Users/merun/Desktop/ovr/ovr-contracts/contracts/ICO.sol\":\"ICO\"},\"evmVersion\":\"petersburg\",\"libraries\":{},\"optimizer\":{\"enabled\":false,\"runs\":200},\"remappings\":[]},\"sources\":{\"/C/Users/merun/Desktop/ovr/ovr-contracts/contracts/ICO.sol\":{\"keccak256\":\"0x74a61c2f3ddf6935eb57e0de3127869c2f5f51f87e17f6669e5df048ad109105\",\"urls\":[\"bzz-raw://bc4b7abbd60423718aa19cb4a2894641470c723f12ecc7c08e6f1986717bcc01\",\"dweb:/ipfs/Qma8iuJHzuJ5ayuh832V9oQkkHrQZqEHFZxbsWm9BgAKUZ\"]}},\"version\":1}",
   "bytecode": "0x6080604052348015600f57600080fd5b50603e80601d6000396000f3fe6080604052600080fdfea265627a7a723158209abbf92c01eaaee06f671515a002143dccdbd01da5a79d1404509e5c8c65d24664736f6c634300050b0032",
   "deployedBytecode": "0x6080604052600080fdfea265627a7a723158209abbf92c01eaaee06f671515a002143dccdbd01da5a79d1404509e5c8c65d24664736f6c634300050b0032",
-  "sourceMap": "243:19:0:-;;;;8:9:-1;5:2;;;30:1;27;20:12;5:2;243:19:0;;;;;;;",
-  "deployedSourceMap": "243:19:0:-;;;;;",
+  "sourceMap": "243:19:1:-;;;;8:9:-1;5:2;;;30:1;27;20:12;5:2;243:19:1;;;;;;;",
+  "deployedSourceMap": "243:19:1:-;;;;;",
   "source": "pragma solidity ^0.5.0;\r\n\r\n/// The ICO contract to run auctions and buy OVRLands (ERC721) after winning in exchange for OVRTokens (ERC20)\r\n/// Also handles land sells and purchases for people that want to exchange their land once they got it\r\ncontract ICO {\r\n\r\n}",
   "sourcePath": "C:\\Users\\merun\\Desktop\\ovr\\ovr-contracts\\contracts\\ICO.sol",
   "ast": {
     "absolutePath": "/C/Users/merun/Desktop/ovr/ovr-contracts/contracts/ICO.sol",
     "exportedSymbols": {
       "ICO": [
-        2
+        397
       ]
     },
-    "id": 3,
+    "id": 398,
     "nodeType": "SourceUnit",
     "nodes": [
       {
-        "id": 1,
+        "id": 396,
         "literals": [
           "solidity",
           "^",
@@ -27,7 +27,7 @@
           ".0"
         ],
         "nodeType": "PragmaDirective",
-        "src": "0:23:0"
+        "src": "0:23:1"
       },
       {
         "baseContracts": [],
@@ -35,31 +35,31 @@
         "contractKind": "contract",
         "documentation": "Also handles land sells and purchases for people that want to exchange their land once they got it",
         "fullyImplemented": true,
-        "id": 2,
+        "id": 397,
         "linearizedBaseContracts": [
-          2
+          397
         ],
         "name": "ICO",
         "nodeType": "ContractDefinition",
         "nodes": [],
-        "scope": 3,
-        "src": "243:19:0"
+        "scope": 398,
+        "src": "243:19:1"
       }
     ],
-    "src": "0:262:0"
+    "src": "0:262:1"
   },
   "legacyAST": {
     "absolutePath": "/C/Users/merun/Desktop/ovr/ovr-contracts/contracts/ICO.sol",
     "exportedSymbols": {
       "ICO": [
-        2
+        397
       ]
     },
-    "id": 3,
+    "id": 398,
     "nodeType": "SourceUnit",
     "nodes": [
       {
-        "id": 1,
+        "id": 396,
         "literals": [
           "solidity",
           "^",
@@ -67,7 +67,7 @@
           ".0"
         ],
         "nodeType": "PragmaDirective",
-        "src": "0:23:0"
+        "src": "0:23:1"
       },
       {
         "baseContracts": [],
@@ -75,18 +75,18 @@
         "contractKind": "contract",
         "documentation": "Also handles land sells and purchases for people that want to exchange their land once they got it",
         "fullyImplemented": true,
-        "id": 2,
+        "id": 397,
         "linearizedBaseContracts": [
-          2
+          397
         ],
         "name": "ICO",
         "nodeType": "ContractDefinition",
         "nodes": [],
-        "scope": 3,
-        "src": "243:19:0"
+        "scope": 398,
+        "src": "243:19:1"
       }
     ],
-    "src": "0:262:0"
+    "src": "0:262:1"
   },
   "compiler": {
     "name": "solc",
@@ -94,7 +94,7 @@
   },
   "networks": {},
   "schemaVersion": "3.1.0",
-  "updatedAt": "2020-04-21T15:18:40.712Z",
+  "updatedAt": "2020-04-22T20:04:48.746Z",
   "devdoc": {
     "methods": {}
   },

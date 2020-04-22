@@ -34,9 +34,9 @@ contract Ownable {
 ///  1 USD -> X tokens (for those 3 ERC20 tokens since they are stablecoins)
 contract TokenBuy is Ownable, Pausable {
     using SafeMath for uint256;
-    address public daiToken = 0x6B175474E89094C44Da98b954EedeAC495271d0F;
-    address public usdcToken = 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48;
-    address public usdtToken = 0xdAC17F958D2ee523a2206206994597C13D831ec7;
+    address public daiToken;
+    address public usdcToken;
+    address public usdtToken;
     // Our deployed token
     address public ovrToken;
     uint256 public tokensPerEth;
@@ -50,7 +50,18 @@ contract TokenBuy is Ownable, Pausable {
         _;
     }
 
-    constructor (address _ovrToken) public {
+    /// These are the official addresses
+    /// daiToken = 0x6B175474E89094C44Da98b954EedeAC495271d0F;
+    /// usdcToken = 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48;
+    /// usdtToken = 0xdAC17F958D2ee523a2206206994597C13D831ec7;
+    constructor (address _ovrToken, address _daiToken, address _usdcToken, address _usdtToken) public {
+        require(_ovrToken != address(0), "The OVR token address can't be empty");
+        require(_daiToken != address(0), "The DAI token address can't be empty");
+        require(_usdcToken != address(0), "The USDC token address can't be empty");
+        require(_usdtToken != address(0), "The USDT token address can't be empty");
+        daiToken = _daiToken;
+        usdcToken = _usdcToken;
+        usdtToken = _usdtToken;
         ovrToken = _ovrToken;
     }
 
@@ -73,7 +84,7 @@ contract TokenBuy is Ownable, Pausable {
 
     /// To buy tokens in USDT the user must first approve an exceeding or equal amount of USDT tokens by the price to this contract
     /// The function checks your approval and automatically calculates how many tokens to extract
-    /// @param _tokensToBuy is the number of tokens you want to get
+    /// @param _tokensToBuy is the number of tokens you want to get WITH the 18 decimals
     function buyTokensWithUsdt(uint256 _tokensToBuy) public pricesMustBeSet whenNotPaused {
         // Check your approval first
         uint256 allowance = IERC20(usdtToken).allowance(msg.sender, address(this));
@@ -82,12 +93,13 @@ contract TokenBuy is Ownable, Pausable {
         // Transfer the USDT tokens to this contract as the holder
         // Note that this contract is the "approved" person so it should work fine
         IERC20(usdtToken).transferFrom(msg.sender, address(this), paymentRequiredInUsdt);
+        IERC20(ovrToken).transfer(msg.sender, _tokensToBuy);
         emit TokenPurchase(msg.sender, _tokensToBuy, paymentRequiredInUsdt, 'USDT');
     }
 
     /// To buy tokens in USDC the user must first approve an exceeding or equal amount of USDC tokens by the price to this contract
     /// The function checks your approval and automatically calculates how many tokens to extract
-    /// @param _tokensToBuy is the number of tokens you want to get
+    /// @param _tokensToBuy is the number of tokens you want to get WITH the 18 decimals
     function buyTokensWithUsdc(uint256 _tokensToBuy) public pricesMustBeSet whenNotPaused {
         // Check your approval first
         uint256 allowance = IERC20(usdcToken).allowance(msg.sender, address(this));
@@ -96,12 +108,13 @@ contract TokenBuy is Ownable, Pausable {
         // Transfer the USDT tokens to this contract as the holder
         // Note that this contract is the "approved" person so it should work fine
         IERC20(usdcToken).transferFrom(msg.sender, address(this), paymentRequiredInUsdc);
+        IERC20(ovrToken).transfer(msg.sender, _tokensToBuy);
         emit TokenPurchase(msg.sender, _tokensToBuy, paymentRequiredInUsdc, 'USDC');
     }
 
     /// To buy tokens in DAI the user must first approve an exceeding or equal amount of DAI tokens by the price to this contract
     /// The function checks your approval and automatically calculates how many tokens to extract
-    /// @param _tokensToBuy is the number of tokens you want to get
+    /// @param _tokensToBuy is the number of tokens you want to get WITH the 18 decimals
     function buyTokensWithDai(uint256 _tokensToBuy) public pricesMustBeSet whenNotPaused {
         // Check your approval first
         uint256 allowance = IERC20(daiToken).allowance(msg.sender, address(this));
@@ -110,6 +123,7 @@ contract TokenBuy is Ownable, Pausable {
         // Transfer the USDT tokens to this contract as the holder
         // Note that this contract is the "approved" person so it should work fine
         IERC20(daiToken).transferFrom(msg.sender, address(this), paymentRequiredInDai);
+        IERC20(ovrToken).transfer(msg.sender, _tokensToBuy);
         emit TokenPurchase(msg.sender, _tokensToBuy, paymentRequiredInDai, 'DAI');
     }
 
