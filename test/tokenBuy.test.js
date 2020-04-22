@@ -91,23 +91,73 @@ contract('TokenBuy', accs => {
         assert.ok(finalBalance.eq(tokensToBuy), 'The final balance must be correct when buying with USDT')
     })
 
-    xit('should extract DAI tokens successfully', async () => {
+    it('should extract DAI tokens successfully', async () => {
         const initialDaiBalance = await daiToken.balanceOf(accounts[0])
         const tokensToBuy = web3.utils.toWei(new web3.utils.BN(10)) // Must be a string or BN
+        const price = tokensToBuy.div(new web3.utils.BN(priceToSetUsd))
         const finalBalance = await buyTokens('dai', tokensToBuy)
         const secondDaiBalance = await daiToken.balanceOf(accounts[0])
         assert.ok(finalBalance.eq(tokensToBuy), 'The final balance must be correct when buying with DAI')
-        assert.ok(initialDaiBalance.sub(tokensToBuy.div(priceToSetUsd)), 'The balance of DAI must be reduced')
+        assert.ok(initialDaiBalance.sub(price).eq(secondDaiBalance), 'The balance of DAI must be reduced')
 
         // Then extract them
-        // await tokenBuy.extractTokens(daiToken.address, tokensToExtract)
-        // const finalTokenBalance = await daiToken.balanceOf(accounts[0])
-        // assert.eq(initialTokenBalance.eq(finalTokenBalance), 'You must have your extracted DAI tokens')
+        await tokenBuy.extractTokens(daiToken.address, price)
+        const finalTokenBalance = await daiToken.balanceOf(accounts[0])
+        assert.ok(initialDaiBalance.eq(finalTokenBalance), 'You must have your extracted DAI tokens')
+    })
+
+    it('should extract USDT tokens successfully', async () => {
+        const initialUsdtBalance = await usdtToken.balanceOf(accounts[0])
+        const tokensToBuy = web3.utils.toWei(new web3.utils.BN(10)) // Must be a string or BN
+        const price = tokensToBuy.div(new web3.utils.BN(priceToSetUsd))
+        const finalBalance = await buyTokens('usdt', tokensToBuy)
+        const secondUsdtBalance = await usdtToken.balanceOf(accounts[0])
+        assert.ok(finalBalance.eq(tokensToBuy), 'The final balance must be correct when buying with USDT')
+        assert.ok(initialUsdtBalance.sub(price).eq(secondUsdtBalance), 'The balance of USDT must be reduced')
+
+        // Then extract them
+        await tokenBuy.extractTokens(usdtToken.address, price)
+        const finalTokenBalance = await usdtToken.balanceOf(accounts[0])
+        assert.ok(initialUsdtBalance.eq(finalTokenBalance), 'You must have your extracted USDT tokens')
+    })
+
+    it('should extract USDC tokens successfully', async () => {
+        const initialUsdcBalance = await usdcToken.balanceOf(accounts[0])
+        const tokensToBuy = web3.utils.toWei(new web3.utils.BN(10)) // Must be a string or BN
+        const price = tokensToBuy.div(new web3.utils.BN(priceToSetUsd))
+        const finalBalance = await buyTokens('usdc', tokensToBuy)
+        const secondUsdcBalance = await usdcToken.balanceOf(accounts[0])
+        assert.ok(finalBalance.eq(tokensToBuy), 'The final balance must be correct when buying with USDC')
+        assert.ok(initialUsdcBalance.sub(price).eq(secondUsdcBalance), 'The balance of USDC must be reduced')
+
+        // Then extract them
+        await tokenBuy.extractTokens(usdcToken.address, price)
+        const finalTokenBalance = await usdcToken.balanceOf(accounts[0])
+        assert.ok(initialUsdcBalance.eq(finalTokenBalance), 'You must have your extracted USDC tokens')
+    })
+
+    it('should extract the ETH stored in the contract successfully', async () => {
+        const initialEthBalance = await web3.eth.getBalance(accounts[0])
+        const tokensToBuy = web3.utils.toWei('200') // Must be a string or web3 will bitch about it
+        const etherToSend = tokensToBuy / priceToSetEth
+        await tokenBuy.setTokenPrices(priceToSetEth, priceToSetUsd)
+        await tokenBuy.buyTokensWithEth({
+            value: etherToSend, // Must be a string for web3 for precission erros
+        })
+        const finalBalance = await ovrToken.balanceOf(accounts[0])
+        assert.equal(finalBalance, tokensToBuy, 'The final balance must be correct when buying with ETH')
+        const midEthBalance = await web3.eth.getBalance(accounts[0])
+        assert.ok(initialEthBalance > midEthBalance, 'The mid balance should be lower in ETH')
+        // Then extract them
+        await tokenBuy.extractEth()
+        const finalEthBalance = await web3.eth.getBalance(accounts[0])
+        assert.ok(finalEthBalance > midEthBalance, 'You must have extracted ETH coins')
     })
 })
 
+
 async function buyTokens(tokenType, tokensToBuy) {
-    const price = tokensToBuy.mul(new web3.utils.BN(priceToSetUsd))
+    const price = tokensToBuy.div(new web3.utils.BN(priceToSetUsd))
     await tokenBuy.setTokenPrices(priceToSetEth, priceToSetUsd)
     // First approve the exact amount of tokens
     switch (tokenType) {

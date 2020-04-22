@@ -39,7 +39,9 @@ contract TokenBuy is Ownable, Pausable {
     address public usdtToken;
     // Our deployed token
     address public ovrToken;
+    // This indicates how many tokens you get for 1 ether
     uint256 public tokensPerEth;
+    // You get X tokens for 1 USD where X is this variable
     uint256 public tokensPerUsd;
 
     event TokenPurchase(address from, uint256 ovrPurchased, uint256 coinsPaid, string coinUsed);
