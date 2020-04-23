@@ -1,0 +1,2 @@
+- When you deploy the ERC721, you must set the ICO contracts as the approved for all your tokens by executing the function setApprovalForAll()
+- When users want to purchase tokens, they must first approve the right amount of USDT, USDC or DAI to purchase. No need to approve ETH since it's not a token.

@@ -45,16 +45,27 @@ contract ICO is Ownable, Pausable {
     }
 
     event AuctionStarted(address indexed lastBidder, string indexed landToBuy, uint256 paid, uint256 timestamp);
+    event AuctionBid(address indexed newBidder, address indexed oldBidder, string indexed landToBuy, uint256 paid, uint256 timestamp);
+    event WonLand(address indexed winner, string indexed landId, uint256 price);
 
     address public ovrToken;
     address public ovrLand;
     uint256 public initialLandBid;
+    // The tokens that can be extracted by the owner after auctions have been won, 
+    // the accomulated payments of all the winners
+    uint256 public extractableTokens;
+    // When the contract was created required for calculating cashbacks
+    uint256 public contractCreationDate;
+
     // LandID => Auction
     mapping (string => Auction) public auctions;
     // User => OVR tokens locked in active actions inside this contract
     mapping (address => uint256) public userTokensInActiveAuctions;
-    // User => OVR tokens that can be extracted by users after they lose an auction since they had to bid, moving their funds to this contract
-    mapping (address => uint256) public redeemableTokens;
+    // User => a list of owned land ids
+    mapping (address => string[]) public ownedLands;
+    // User => how many tokens he can cashback with redeemCashback()
+    mappings (address => uint256) public cashbacks;
+    string[] public activeLands;
 
     constructor(address _ovrToken, address _ovrLand, uint256 _initialLandBid) public {
         require(_ovrToken != address(0), "The OVR ERC20 token address can't be empty");
@@ -63,30 +74,36 @@ contract ICO is Ownable, Pausable {
         ovrToken = _ovrToken;
         ovrLand = _ovrLand;
         initialLandBid = _initialLandBid;
+        contractCreationDate = now;
     }
 
-
-    // The problem right now is that a person can pull their allowance whenever they want
-    // So what we'll do is execute the transferFrom immediately after the bid is placed
-    // Then the user will have to manually redeem his tokens if he loses the auction
-    // Cuz they will be locked in the contract
-    // Otherwise we run the risk of people pulling their bids right before they win
-    // making them capable of inflating everybody's auction prices without buying
-
-
+    /// TODO test that the auctions[] is actually being updated
     /// To participate in a new or existing auction
     /// The user must first approve the right amount of OVR tokens to execute this
     /// @return bool If you were able to participate in the auction correctly or not
     /// False when the auction has ended and True when you've participated successfully
     function participateInAuction(string _landId) public whenNotPaused returns(bool) {
-        Auction memory landToBuy = auctions[_landId];
+        Auction storage landToBuy = auctions[_landId];
         uint256 allowance = IERC20(usdtToken).allowance(msg.sender, address(this));
 
         if (landToBuy.state == AuctionState.ACTIVE) {
             // The auction for this land ID has been started
+            // The next bidder must pay double the last price
             uint256 nextBid = landToBuy.paid.mul(2);
+            address oldBidder = landToBuy.lastBidder;
+            uint256 oldBid = landToBuy.paid;
             require(allowance >= nextBid, 'Your allowance must equal or exceed the cost of participating in this auction');
-            userTokensInActiveAuctions // TODO Update after the transferFrom()
+            userTokensInActiveAuctions[oldBidder] = userTokensInActiveAuctions[oldBidder].sub(oldBid);
+            // Transfer new bidder's tokens
+            IERC20(ovrToken).transferFrom(msg.sender, address(this), nextBid);
+            // Return previous bidder's tokens
+            IERC20(ovrToken).transfer(oldBidder, oldBid);
+            landToBuy.lastBidder = msg.sender;
+            landToBuy.paid = nextBid;
+            landToBuy.lastBidTimestamp = now;
+            extractableTokens = extractableTokens.add(oldBid);
+            emit AuctionBid(msg.sender, oldBidder, _landId, nextBid, now);
+            return true;
         } else if (landToBuy.state == AuctionState.NOT_STARTED) {
             // This is a new auction
             // Check the tokens locked in active auctions because it may happen that he has 
@@ -94,16 +111,61 @@ contract ICO is Ownable, Pausable {
             // to cover this auction too
             require(allowance >= initialLandBid, 'Your allowance must equal or exceed the cost of participating in this auction');
             auctions[_landId] = Auction(msg.sender, _landId, initialLandBid, now, AuctionState.ACTIVE);
-            userUsedAllowance[msg.sender] += initialLandBid;
+            userUsedAllowance[msg.sender] = userUsedAllowance[msg.sender].add(initialLandBid);
+            activeLands.push(_landId);
             emit AuctionStarted(msg.sender, _landId, initialLandBid, now);
+            return true;
         } else {
             return false;
         }
+    }
 
-        // The auction for this land ID has not been started
-        // First the user allows the 10 OVR tokens to buy the land
-        // Check that he's allowed the right amount of tokens
-        // Then we store the active auction in the mapping of active auctions
+    /// To redeem the land that you won in an auction
+    function redeemWonLand(string _landId) public whenNotPaused {
+        Auction memory auction = auctions[_landId];
+        if (now.sub(auction.lastBidTimestamp) > 24 hours) {
+            auctions[_landId].state = AuctionState.ENDED;
+        }
+        require(auction.state != AuctionState.ENDED, "You can't redeem this land until its auction is finished");
+        uint256 cashbackPercentage;
+        uint256 monthPurchasedSinceBeginning = now.sub(contractCreationDate).div(30 days);
+        if (monthPurchasedSinceBeginning == 1) {
+            cashbackPercentage = 95;
+        } else if (monthPurchasedSinceBeginning == 2) {
+            cashbackPercentage = 85;
+        } else if (monthPurchasedSinceBeginning == 3) {
+            cashbackPercentage = 75;
+        } else if (monthPurchasedSinceBeginning == 4) {
+            cashbackPercentage = 65;
+        } else if (monthPurchasedSinceBeginning == 5) {
+            cashbackPercentage = 55;
+        } else if (monthPurchasedSinceBeginning == 6) {
+            cashbackPercentage = 45;
+        } else if (monthPurchasedSinceBeginning == 7) {
+            cashbackPercentage = 35;
+        } else if (monthPurchasedSinceBeginning == 8) {
+            cashbackPercentage = 25;
+        } else if (monthPurchasedSinceBeginning == 9) {
+            cashbackPercentage = 15;
+        } else {
+            cashbackPercentage = 0;
+        }
+        uint256 cashback = auction.price.mul(cashbackPercentage).div(100);
+        cashbacks[msg.sender] = cashbacks[msg.sender].add(cashback);
+
+        // Transfer the land to the user
+        // TODO Test this to make sure that the parameters are correct cuz it may need to be changed I'm not sure how it works
+        IERC721(ovrLand).safeTransferFrom(owner, msg.sender, _landId);
+        ownedLands[msg.sender].push(_landId);
+
+        emit WonLand(msg.sender, _landId, auction.price);
+    }
+
+    // TODO create the epoch functionality
+
+    /// To get your cashback for the buyers in the initial 9 months
+    function redeemCashback() public whenNotPaused {
+
     }
 
     /// To extract the tokens that may have been sent to this contract by accident
@@ -114,5 +176,19 @@ contract ICO is Ownable, Pausable {
     /// To extract the ether stored in this contract
     function extractEth() public onlyOwner whenNotPaused {
         owner.transfer(address(this).balance);
+    }
+
+    /// Returns the landIds you won so you know which landIds you can redeem
+    function checkWonLands() public view returns(string[]) {
+        string[] memory result;
+        uint256 counter = 0;
+        for(uint256 i = 0; i < activeLands.length; i++) {
+            string landId = activeLands[i];
+            if (auctions[landId].state == AuctionState.ENDED && auctions[landId].lastBidder == msg.sender) {
+                result[counter] = landId;
+                counter = counter.add(1);
+            }
+        }
+        return result;
     }
 }
