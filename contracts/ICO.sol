@@ -82,6 +82,7 @@ contract ICO is Ownable, Pausable {
     /// @return bool If you were able to participate in the auction correctly or not
     /// False when the auction has ended and True when you've participated successfully
     function participateInAuction(string _landId) public whenNotPaused returns(bool) {
+        require(checkEpoch(_landId), "This land isn't available at the current epoch");
         Auction storage landToBuy = auctions[_landId];
         uint256 allowance = IERC20(usdtToken).allowance(msg.sender, address(this));
 
@@ -192,4 +193,71 @@ contract ICO is Ownable, Pausable {
         }
         return result;
     }
+
+    /// Checks if the token you want to buy is within the epoch available
+    /// @returns bool True if it's in a valid epoch and false if not
+    function checkEpoch(string _landId) public view returns(bool) {
+        uint256 currentMonth = now.minus(contractCreationDate).div(30);
+        // The 3rd digit starting from the end example 8c6035ba37551ff
+        string memory landIdDigit = substring(_landId, 11, 12);
+        if (currentMonth == 1) {
+            if (
+                keccak256(bytes(landIdDigit)) == keccak256(bytes("1"))
+                || keccak256(bytes(landIdDigit)) == keccak256(bytes("2"))
+            ) {
+                return true;
+            }
+        } else if (currentMonth == 2) {
+            if (
+                keccak256(bytes(landIdDigit)) == keccak256(bytes("3"))
+                || keccak256(bytes(landIdDigit)) == keccak256(bytes("4"))
+                || keccak256(bytes(landIdDigit)) == keccak256(bytes("5"))
+            ) {
+                return true;
+            }
+        } else if (currentMonth == 3) {
+            if (
+                keccak256(bytes(landIdDigit)) == keccak256(bytes("6"))
+                || keccak256(bytes(landIdDigit)) == keccak256(bytes("7"))
+            ) {
+                return true;
+            }
+        } else if (currentMonth == 4) {
+            if (
+                keccak256(bytes(landIdDigit)) == keccak256(bytes("8"))
+                || keccak256(bytes(landIdDigit)) == keccak256(bytes("9"))
+                || keccak256(bytes(landIdDigit)) == keccak256(bytes("a"))
+            ) {
+                return true;
+            }
+        } else if (currentMonth == 5) {
+            if (
+                keccak256(bytes(landIdDigit)) == keccak256(bytes("b"))
+                || keccak256(bytes(landIdDigit)) == keccak256(bytes("c"))
+                || keccak256(bytes(landIdDigit)) == keccak256(bytes("d"))
+            ) {
+                return true;
+            }
+        } else if (currentMonth == 6) {
+            if (
+                keccak256(bytes(landIdDigit)) == keccak256(bytes("e"))
+                || keccak256(bytes(landIdDigit)) == keccak256(bytes("f"))
+            ) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    // To check the epoch by breaking the landId
+    function substring(string str, uint256 startIndex, uint256 endIndex) public pure returns (string) {
+      bytes memory strBytes = bytes(str);
+      bytes memory result = new bytes(endIndex-startIndex);
+      for(uint i = startIndex; i < endIndex; i++) {
+          result[i-startIndex] = strBytes[i];
+      }
+      return string(result);
+  }
 }
+

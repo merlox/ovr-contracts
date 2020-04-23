@@ -1,2 +1,9 @@
 - When you deploy the ERC721, you must set the ICO contracts as the approved for all your tokens by executing the function setApprovalForAll()
 - When users want to purchase tokens, they must first approve the right amount of USDT, USDC or DAI to purchase. No need to approve ETH since it's not a token.
+
+- Epoch 1 will allow users to auction for lands with the digit 1, 2
+- Epoch 2 will allow users to auction for lands with the digit 3, 4, 5
+- Epoch 3 will allow users to auction for lands with the digit 6, 7
+- Epoch 4 will allow users to auction for lands with the digit 8, 9, a
+- Epoch 5 will allow users to auction for lands with the digit b, c, d
+- Epoch 6 will allow users to auction for lands with the digit e, f
