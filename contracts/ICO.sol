@@ -56,7 +56,6 @@ contract ICO is Ownable, Pausable {
     uint256 public extractableTokens;
     // When the contract was created required for calculating cashbacks
     uint256 public contractCreationDate;
-
     // LandID => Auction
     mapping (string => Auction) public auctions;
     // User => OVR tokens locked in active actions inside this contract
@@ -165,7 +164,9 @@ contract ICO is Ownable, Pausable {
 
     /// To get your cashback for the buyers in the initial 9 months
     function redeemCashback() public whenNotPaused {
-
+        uint256 tempCashback = cashbacks[msg.sender];
+        cashbacks[msg.sender] = 0;
+        IERC20(ovrToken).transfer(msg.sender, tempCashback);
     }
 
     /// To extract the tokens that may have been sent to this contract by accident
