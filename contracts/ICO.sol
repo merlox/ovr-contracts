@@ -2,8 +2,9 @@ pragma solidity ^0.5.0;
 
 import '@openzeppelin/contracts/math/SafeMath.sol';
 import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
-import '@openzeppelin/contracts/token/ERC721/IERC721.sol';
 import '@openzeppelin/contracts/lifecycle/Pausable.sol';
+// Custom modified version to use String tokenIds instead of uints
+import './ERC721.sol';
 
 contract Ownable {
     address payable public owner;
@@ -63,7 +64,7 @@ contract ICO is Ownable, Pausable {
     // User => a list of owned land ids
     mapping (address => string[]) public ownedLands;
     // User => how many tokens he can cashback with redeemCashback()
-    mappings (address => uint256) public cashbacks;
+    mapping (address => uint256) public cashbacks;
     string[] public activeLands;
 
     constructor(address _ovrToken, address _ovrLand, uint256 _initialLandBid) public {
@@ -81,10 +82,10 @@ contract ICO is Ownable, Pausable {
     /// The user must first approve the right amount of OVR tokens to execute this
     /// @return bool If you were able to participate in the auction correctly or not
     /// False when the auction has ended and True when you've participated successfully
-    function participateInAuction(string _landId) public whenNotPaused returns(bool) {
+    function participateInAuction(string memory _landId) public whenNotPaused returns(bool) {
         require(checkEpoch(_landId), "This land isn't available at the current epoch");
         Auction storage landToBuy = auctions[_landId];
-        uint256 allowance = IERC20(usdtToken).allowance(msg.sender, address(this));
+        uint256 allowance = IERC20(ovrToken).allowance(msg.sender, address(this));
 
         if (landToBuy.state == AuctionState.ACTIVE) {
             // The auction for this land ID has been started
@@ -111,7 +112,6 @@ contract ICO is Ownable, Pausable {
             // to cover this auction too
             require(allowance >= initialLandBid, 'Your allowance must equal or exceed the cost of participating in this auction');
             auctions[_landId] = Auction(msg.sender, _landId, initialLandBid, now, AuctionState.ACTIVE);
-            userUsedAllowance[msg.sender] = userUsedAllowance[msg.sender].add(initialLandBid);
             activeLands.push(_landId);
             emit AuctionStarted(msg.sender, _landId, initialLandBid, now);
             return true;
@@ -121,7 +121,7 @@ contract ICO is Ownable, Pausable {
     }
 
     /// To redeem the land that you won in an auction
-    function redeemWonLand(string _landId) public whenNotPaused {
+    function redeemWonLand(string memory _landId) public whenNotPaused {
         Auction memory auction = auctions[_landId];
         if (now.sub(auction.lastBidTimestamp) > 24 hours) {
             auctions[_landId].state = AuctionState.ENDED;
@@ -150,7 +150,7 @@ contract ICO is Ownable, Pausable {
         } else {
             cashbackPercentage = 0;
         }
-        uint256 cashback = auction.price.mul(cashbackPercentage).div(100);
+        uint256 cashback = auction.paid.mul(cashbackPercentage).div(100);
         cashbacks[msg.sender] = cashbacks[msg.sender].add(cashback);
 
         // Transfer the land to the user
@@ -158,7 +158,7 @@ contract ICO is Ownable, Pausable {
         IERC721(ovrLand).safeTransferFrom(owner, msg.sender, _landId);
         ownedLands[msg.sender].push(_landId);
 
-        emit WonLand(msg.sender, _landId, auction.price);
+        emit WonLand(msg.sender, _landId, auction.paid);
     }
 
     // TODO create the epoch functionality
@@ -181,11 +181,11 @@ contract ICO is Ownable, Pausable {
     }
 
     /// Returns the landIds you won so you know which landIds you can redeem
-    function checkWonLands() public view returns(string[]) {
+    function checkWonLands() public view returns(string[] memory) {
         string[] memory result;
         uint256 counter = 0;
         for(uint256 i = 0; i < activeLands.length; i++) {
-            string landId = activeLands[i];
+            string memory landId = activeLands[i];
             if (auctions[landId].state == AuctionState.ENDED && auctions[landId].lastBidder == msg.sender) {
                 result[counter] = landId;
                 counter = counter.add(1);
@@ -196,7 +196,7 @@ contract ICO is Ownable, Pausable {
 
     /// Checks if the token you want to buy is within the epoch available
     /// @returns bool True if it's in a valid epoch and false if not
-    function checkEpoch(string _landId) public view returns(bool) {
+    function checkEpoch(string memory _landId) public view returns(bool) {
         uint256 currentMonth = now.minus(contractCreationDate).div(30);
         // The 3rd digit starting from the end example 8c6035ba37551ff
         string memory landIdDigit = substring(_landId, 11, 12);
@@ -251,7 +251,7 @@ contract ICO is Ownable, Pausable {
     }
 
     // To check the epoch by breaking the landId
-    function substring(string str, uint256 startIndex, uint256 endIndex) public pure returns (string) {
+    function substring(string memory str, uint256 startIndex, uint256 endIndex) public pure returns (string memory) {
       bytes memory strBytes = bytes(str);
       bytes memory result = new bytes(endIndex-startIndex);
       for(uint i = startIndex; i < endIndex; i++) {
