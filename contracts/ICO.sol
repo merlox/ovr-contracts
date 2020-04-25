@@ -39,15 +39,15 @@ contract ICO is Ownable, Pausable {
 
     struct Auction {
         address lastBidder;
-        string landToBuy;
+        uint256 landToBuy;
         uint256 paid;
         uint256 lastBidTimestamp;
         AuctionState state;
     }
 
-    event AuctionStarted(address indexed lastBidder, string indexed landToBuy, uint256 paid, uint256 timestamp);
-    event AuctionBid(address indexed newBidder, address indexed oldBidder, string indexed landToBuy, uint256 paid, uint256 timestamp);
-    event WonLand(address indexed winner, string indexed landId, uint256 price);
+    event AuctionStarted(address indexed lastBidder, uint256 indexed landToBuy, uint256 paid, uint256 timestamp);
+    event AuctionBid(address indexed newBidder, address indexed oldBidder, uint256 indexed landToBuy, uint256 paid, uint256 timestamp);
+    event WonLand(address indexed winner, uint256 indexed landId, uint256 price);
 
     address public ovrToken;
     address public ovrLand;
@@ -58,11 +58,11 @@ contract ICO is Ownable, Pausable {
     // When the contract was created required for calculating cashbacks
     uint256 public contractCreationDate;
     // LandID => Auction
-    mapping (string => Auction) public auctions;
+    mapping (uint256 => Auction) public auctions;
     // User => OVR tokens locked in active actions inside this contract
     mapping (address => uint256) public userTokensInActiveAuctions;
     // User => a list of owned land ids
-    mapping (address => string[]) public ownedLands;
+    mapping (address => uint256[]) public ownedLands;
     // User => how many tokens he can cashback with redeemCashback()
     mapping (address => uint256) public cashbacks;
     string[] public activeLands;
@@ -84,7 +84,10 @@ contract ICO is Ownable, Pausable {
     /// False when the auction has ended and True when you've participated successfully
     function participateInAuction(string memory _landId) public whenNotPaused returns(bool) {
         require(checkEpoch(_landId), "This land isn't available at the current epoch");
-        Auction storage landToBuy = auctions[_landId];
+        
+        uint256 landId = parseInt(_landId);
+
+        Auction storage landToBuy = auctions[landId];
         uint256 allowance = IERC20(ovrToken).allowance(msg.sender, address(this));
 
         if (landToBuy.state == AuctionState.ACTIVE) {
@@ -195,59 +198,61 @@ contract ICO is Ownable, Pausable {
     }
 
     /// Checks if the token you want to buy is within the epoch available
-    /// @returns bool True if it's in a valid epoch and false if not
+    /// @returns bool True if it's in aA valid epoch and false if not
     function checkEpoch(string memory _landId) public view returns(bool) {
         uint256 currentMonth = now.minus(contractCreationDate).div(30);
         // The 3rd digit starting from the end example 8c6035ba37551ff
-        string memory landIdDigit = substring(_landId, 11, 12);
+        uint256 landIdDigits = parseInt(substring(_landId, 14, 16));
         if (currentMonth == 1) {
-            if (
-                keccak256(bytes(landIdDigit)) == keccak256(bytes("1"))
-                || keccak256(bytes(landIdDigit)) == keccak256(bytes("2"))
-            ) {
+            if (landIdDigits <= 17) {
                 return true;
             }
         } else if (currentMonth == 2) {
-            if (
-                keccak256(bytes(landIdDigit)) == keccak256(bytes("3"))
-                || keccak256(bytes(landIdDigit)) == keccak256(bytes("4"))
-                || keccak256(bytes(landIdDigit)) == keccak256(bytes("5"))
-            ) {
+            if (landIdDigits > 17 && landIdDigits <= 35) {
                 return true;
             }
         } else if (currentMonth == 3) {
-            if (
-                keccak256(bytes(landIdDigit)) == keccak256(bytes("6"))
-                || keccak256(bytes(landIdDigit)) == keccak256(bytes("7"))
-            ) {
+            if (landIdDigits > 35 && landIdDigits <= 53) {
                 return true;
             }
         } else if (currentMonth == 4) {
-            if (
-                keccak256(bytes(landIdDigit)) == keccak256(bytes("8"))
-                || keccak256(bytes(landIdDigit)) == keccak256(bytes("9"))
-                || keccak256(bytes(landIdDigit)) == keccak256(bytes("a"))
-            ) {
+            if (landIdDigits > 53 && landIdDigits <= 70) {
                 return true;
             }
         } else if (currentMonth == 5) {
-            if (
-                keccak256(bytes(landIdDigit)) == keccak256(bytes("b"))
-                || keccak256(bytes(landIdDigit)) == keccak256(bytes("c"))
-                || keccak256(bytes(landIdDigit)) == keccak256(bytes("d"))
-            ) {
+            if (landIdDigits > 70 && landIdDigits <= 88) {
                 return true;
             }
         } else if (currentMonth == 6) {
-            if (
-                keccak256(bytes(landIdDigit)) == keccak256(bytes("e"))
-                || keccak256(bytes(landIdDigit)) == keccak256(bytes("f"))
-            ) {
+            if (landIdDigits > 88 && landIdDigits <= 99) {
                 return true;
             }
         }
 
         return false;
+    }
+
+    // Converts a number in string form to a uint256
+    // For example: string -> "123" returns uint256 -> 123
+    function parseInt(string memory _a) public pure returns (uint _parsedInt) {
+        bytes memory bresult = bytes(_a);
+        uint mint = 0;
+        bool decimals = false;
+        for (uint i = 0; i < bresult.length; i++) {
+            if ((uint(uint8(bresult[i])) >= 48) && (uint(uint8(bresult[i])) <= 57)) {
+                if (decimals) {
+                   break;
+                }
+                mint *= 10;
+                mint += uint(uint8(bresult[i])) - 48;
+            } else if (uint(uint8(bresult[i])) == 46) {
+                require(!decimals, 'More than one decimal encountered in string!');
+                decimals = true;
+            } else {
+                revert("Non-numeral character encountered in string!");
+            }
+        }
+        return mint;
     }
 
     // To check the epoch by breaking the landId
@@ -258,6 +263,6 @@ contract ICO is Ownable, Pausable {
           result[i-startIndex] = strBytes[i];
       }
       return string(result);
-  }
+    }
 }
 

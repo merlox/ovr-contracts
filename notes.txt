@@ -1,9 +1,18 @@
 - When you deploy the ERC721, you must set the ICO contracts as the approved for all your tokens by executing the function setApprovalForAll()
 - When users want to purchase tokens, they must first approve the right amount of USDT, USDC or DAI to purchase. No need to approve ETH since it's not a token.
 
-- Epoch 1 will allow users to auction for lands with the digit 1, 2
-- Epoch 2 will allow users to auction for lands with the digit 3, 4, 5
-- Epoch 3 will allow users to auction for lands with the digit 6, 7
-- Epoch 4 will allow users to auction for lands with the digit 8, 9, a
-- Epoch 5 will allow users to auction for lands with the digit b, c, d
-- Epoch 6 will allow users to auction for lands with the digit e, f
+- Epoch 1 will allow users to auction for lands with the digit 00, 17
+- Epoch 2 will allow users to auction for lands with the digit 18, 35
+- Epoch 3 will allow users to auction for lands with the digit 36, 53
+- Epoch 4 will allow users to auction for lands with the digit 54, 70
+- Epoch 5 will allow users to auction for lands with the digit 71, 88
+- Epoch 6 will allow users to auction for lands with the digit 89, 99
+
+- Land ids must be passed as a hexadecimal string meaning it has a 0x infront of it which you can add it on the frontend, not in solidity
+
+- Use partseInt(hex_id, 16) to convert the hex id to a number. Here are some examples to how it looks like:
+-- hex: 8c2ba8d944de3ff, int: 631272015026578400
+-- hex: 8c2ba8d96b761ff, int: 631272015067046400
+-- hex: 8c2ba8d96b0d1ff, int: 631272015066616300
+
+So we check the last 4 digits for the epochs
