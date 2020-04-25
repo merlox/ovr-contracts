@@ -37,17 +37,24 @@ contract ICO is Ownable, Pausable {
     // Default state is NOT_STARTED
     enum AuctionState { NOT_STARTED, ACTIVE, ENDED }
 
-    struct Auction {
-        address lastBidder;
+    struct Land {
+        address owner;
         uint256 landToBuy;
         uint256 paid;
         uint256 lastBidTimestamp;
         AuctionState state;
+
+        // Marketplace functionality
+        uint256 sellPrice;
+        bool onSale;
     }
 
     event AuctionStarted(address indexed lastBidder, uint256 indexed landToBuy, uint256 paid, uint256 timestamp);
     event AuctionBid(address indexed newBidder, address indexed oldBidder, uint256 indexed landToBuy, uint256 paid, uint256 timestamp);
     event WonLand(address indexed winner, uint256 indexed landId, uint256 price);
+    event LandSaleStarted(address indexed owner, uint256 indexed landId, uint256 price);
+    // For lands that have been on sale but were removed by the owner
+    event LandSaleCancelled(address indexed owner, uint256 indexed landId, uint256 price);
 
     address public ovrToken;
     address public ovrLand;
@@ -57,15 +64,23 @@ contract ICO is Ownable, Pausable {
     uint256 public extractableTokens;
     // When the contract was created required for calculating cashbacks
     uint256 public contractCreationDate;
-    // LandID => Auction
-    mapping (uint256 => Auction) public auctions;
+    // LandID => Land
+    mapping (uint256 => Land) public lands;
     // User => OVR tokens locked in active actions inside this contract
     mapping (address => uint256) public userTokensInActiveAuctions;
     // User => a list of owned land ids
     mapping (address => uint256[]) public ownedLands;
     // User => how many tokens he can cashback with redeemCashback()
     mapping (address => uint256) public cashbacks;
-    string[] public activeLands;
+    // Lands that have initiated the auction process can be either active or ended
+    uint256[] public activeLands;
+
+    // Lands that are on sale or have been sold previously 
+    // This array is immutable meaning it won't delete already existing ids
+    // because it's a very gas consuming process.
+    // When a land is sold, the pointed Land id from `lands` is updated
+    // There can be multiple instances of the same id inside so filter them in js
+    uint256[] public landsOnSaleOrSold;
 
     constructor(address _ovrToken, address _ovrLand, uint256 _initialLandBid) public {
         require(_ovrToken != address(0), "The OVR ERC20 token address can't be empty");
@@ -82,19 +97,17 @@ contract ICO is Ownable, Pausable {
     /// The user must first approve the right amount of OVR tokens to execute this
     /// @return bool If you were able to participate in the auction correctly or not
     /// False when the auction has ended and True when you've participated successfully
-    function participateInAuction(string memory _landId) public whenNotPaused returns(bool) {
+    function participateInAuction(uint256 _landId) public whenNotPaused returns(bool) {
         require(checkEpoch(_landId), "This land isn't available at the current epoch");
-        
-        uint256 landId = parseInt(_landId);
 
-        Auction storage landToBuy = auctions[landId];
+        Land storage landToBuy = lands[_landId];
         uint256 allowance = IERC20(ovrToken).allowance(msg.sender, address(this));
 
         if (landToBuy.state == AuctionState.ACTIVE) {
             // The auction for this land ID has been started
             // The next bidder must pay double the last price
             uint256 nextBid = landToBuy.paid.mul(2);
-            address oldBidder = landToBuy.lastBidder;
+            address oldBidder = landToBuy.owner;
             uint256 oldBid = landToBuy.paid;
             require(allowance >= nextBid, 'Your allowance must equal or exceed the cost of participating in this auction');
             userTokensInActiveAuctions[oldBidder] = userTokensInActiveAuctions[oldBidder].sub(oldBid);
@@ -102,11 +115,11 @@ contract ICO is Ownable, Pausable {
             IERC20(ovrToken).transferFrom(msg.sender, address(this), nextBid);
             // Return previous bidder's tokens
             IERC20(ovrToken).transfer(oldBidder, oldBid);
-            landToBuy.lastBidder = msg.sender;
+            landToBuy.owner = msg.sender;
             landToBuy.paid = nextBid;
             landToBuy.lastBidTimestamp = now;
             extractableTokens = extractableTokens.add(oldBid);
-            emit AuctionBid(msg.sender, oldBidder, landId, nextBid, now);
+            emit AuctionBid(msg.sender, oldBidder, _landId, nextBid, now);
             return true;
         } else if (landToBuy.state == AuctionState.NOT_STARTED) {
             // This is a new auction
@@ -114,7 +127,7 @@ contract ICO is Ownable, Pausable {
             // 10 approved and wants to participate in 5 auctions check that he has enough
             // to cover this auction too
             require(allowance >= initialLandBid, 'Your allowance must equal or exceed the cost of participating in this auction');
-            auctions[_landId] = Auction(msg.sender, _landId, initialLandBid, now, AuctionState.ACTIVE);
+            lands[_landId] = Land(msg.sender, _landId, initialLandBid, now, AuctionState.ACTIVE, 0, false);
             activeLands.push(_landId);
             emit AuctionStarted(msg.sender, _landId, initialLandBid, now);
             return true;
@@ -124,10 +137,10 @@ contract ICO is Ownable, Pausable {
     }
 
     /// To redeem the land that you won in an auction
-    function redeemWonLand(string memory _landId) public whenNotPaused {
-        Auction memory auction = auctions[_landId];
+    function redeemWonLand(uint256 _landId) public whenNotPaused {
+        Land memory auction = lands[_landId];
         if (now.sub(auction.lastBidTimestamp) > 24 hours) {
-            auctions[_landId].state = AuctionState.ENDED;
+            lands[_landId].state = AuctionState.ENDED;
         }
         require(auction.state != AuctionState.ENDED, "You can't redeem this land until its auction is finished");
         uint256 cashbackPercentage;
@@ -164,8 +177,6 @@ contract ICO is Ownable, Pausable {
         emit WonLand(msg.sender, _landId, auction.paid);
     }
 
-    // TODO create the epoch functionality
-
     /// To get your cashback for the buyers in the initial 9 months
     function redeemCashback() public whenNotPaused {
         uint256 tempCashback = cashbacks[msg.sender];
@@ -183,13 +194,40 @@ contract ICO is Ownable, Pausable {
         owner.transfer(address(this).balance);
     }
 
+    /// To put on sell a land you own
+    /// Note: the price can be 0 to give it away for free
+    /// @param _onSale To indicate whether you want to put it on sale or remove it from the sale
+    function sellLand(uint256 _landId, uint256 _price, bool _onSale) public whenNotPaused {
+        Land storage land = lands[_landId];
+        require(msg.sender == land.owner, 'You must be the land owner to put it on sale');
+        require(land.state == AuctionState.ENDED, 'The land auction must have been completed to put it on sale');
+        landsOnSaleOrSold.push(landId);
+        land.onSale = _onSale;
+        land.sellPrice = _price;
+        if (_onSale) {
+            emit LandSaleStarted(land.owner, _landId, true);
+        } else {
+            emit LandSaleCancelled(land.owner, _landId, false);
+        }
+    }
+
+    /// TODO This
+    /// To buy a land on sale
+    /// The buyer must approve the land price in OVR tokens to purchase it
+    function buyLand(uint256 _landId) public whenNotPaused {
+        Land storage land = lands[_landId];
+
+
+        IERC20(ovrToken).transferFrom(msg.sender, address(this), nextBid);
+    }
+
     /// Returns the landIds you won so you know which landIds you can redeem
-    function checkWonLands() public view returns(string[] memory) {
-        string[] memory result;
+    function checkWonLands() public view returns(uint256[] memory) {
+        uint256[] memory result;
         uint256 counter = 0;
         for(uint256 i = 0; i < activeLands.length; i++) {
-            string memory landId = activeLands[i];
-            if (auctions[landId].state == AuctionState.ENDED && auctions[landId].lastBidder == msg.sender) {
+            uint256 landId = activeLands[i];
+            if (lands[landId].state == AuctionState.ENDED && lands[landId].owner == msg.sender) {
                 result[counter] = landId;
                 counter = counter.add(1);
             }
@@ -199,10 +237,10 @@ contract ICO is Ownable, Pausable {
 
     /// Checks if the token you want to buy is within the epoch available
     /// @returns bool True if it's in aA valid epoch and false if not
-    function checkEpoch(string memory _landId) public view returns(bool) {
+    function checkEpoch(uint256 _landId) public view returns(bool) {
         uint256 currentMonth = now.minus(contractCreationDate).div(30);
-        // The 3rd digit starting from the end example 8c6035ba37551ff
-        uint256 landIdDigits = parseInt(substring(_landId, 14, 16));
+        // Extract the last 2 digits
+        uint256 landIdDigits = _landId % 100;
         if (currentMonth == 1) {
             if (landIdDigits <= 17) {
                 return true;
@@ -230,39 +268,6 @@ contract ICO is Ownable, Pausable {
         }
 
         return false;
-    }
-
-    // Converts a number in string form to a uint256
-    // For example: string -> "123" returns uint256 -> 123
-    function parseInt(string memory _a) public pure returns (uint _parsedInt) {
-        bytes memory bresult = bytes(_a);
-        uint mint = 0;
-        bool decimals = false;
-        for (uint i = 0; i < bresult.length; i++) {
-            if ((uint(uint8(bresult[i])) >= 48) && (uint(uint8(bresult[i])) <= 57)) {
-                if (decimals) {
-                   break;
-                }
-                mint *= 10;
-                mint += uint(uint8(bresult[i])) - 48;
-            } else if (uint(uint8(bresult[i])) == 46) {
-                require(!decimals, 'More than one decimal encountered in string!');
-                decimals = true;
-            } else {
-                revert("Non-numeral character encountered in string!");
-            }
-        }
-        return mint;
-    }
-
-    // To check the epoch by breaking the landId
-    function substring(string memory str, uint256 startIndex, uint256 endIndex) public pure returns (string memory) {
-      bytes memory strBytes = bytes(str);
-      bytes memory result = new bytes(endIndex-startIndex);
-      for(uint i = startIndex; i < endIndex; i++) {
-          result[i-startIndex] = strBytes[i];
-      }
-      return string(result);
     }
 }
 

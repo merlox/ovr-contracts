@@ -11,8 +11,8 @@
 - Land ids must be passed as a hexadecimal string meaning it has a 0x infront of it which you can add it on the frontend, not in solidity
 
 - Use partseInt(hex_id, 16) to convert the hex id to a number. Here are some examples to how it looks like:
--- hex: 8c2ba8d944de3ff, int: 631272015026578400
--- hex: 8c2ba8d96b761ff, int: 631272015067046400
--- hex: 8c2ba8d96b0d1ff, int: 631272015066616300
+-- hex: 8c2ba8d944de3ff, int: 631272015026578431
+-- hex: 8c2ba8d96b761ff, int: 631272015067046399
+-- hex: 8c2ba8d96b0d1ff, int: 631272015066616319
 
 So we check the last 4 digits for the epochs
