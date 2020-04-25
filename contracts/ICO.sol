@@ -106,7 +106,7 @@ contract ICO is Ownable, Pausable {
             landToBuy.paid = nextBid;
             landToBuy.lastBidTimestamp = now;
             extractableTokens = extractableTokens.add(oldBid);
-            emit AuctionBid(msg.sender, oldBidder, _landId, nextBid, now);
+            emit AuctionBid(msg.sender, oldBidder, landId, nextBid, now);
             return true;
         } else if (landToBuy.state == AuctionState.NOT_STARTED) {
             // This is a new auction
