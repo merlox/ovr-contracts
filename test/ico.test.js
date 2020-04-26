@@ -56,16 +56,63 @@ contract.only('ICO', accs => {
 				expect(e.reason).to.eq('This land auction has ended')
 			}
 		})
-		it('should not allow you to participate in an auction with a land outside the current epoch', async () => {})
-		it(
-			'should fail to participate in an auction when not given enough token allowance'
-		)
-		it(
-			'should not allow you to participate in an auction when the contract is paused'
-		)
-		it(
-			'should update the auctions[] array successfully after participating in an auction'
-		)
+		it('should not allow you to participate in an auction with a land outside the current epoch', async () => {
+			try {
+				await participateInAuction(
+					accounts[0],
+					initialLandCost,
+					'631272015026578499'
+				)
+				expect.fail('The contract should throw when bidding outside the epoch')
+			} catch (e) {
+				if (
+					e.message ==
+					'The contract should throw when bidding outside the epoch'
+				) {
+					expect.fail(
+						'The contract should throw when bidding outside the epoch'
+					)
+				}
+				expect(e.reason).to.eq("This land isn't available at the current epoch")
+			}
+		})
+		it('should fail to participate in an auction when not given enough token allowance', async () => {
+			try {
+				await participateInAuction(accounts[0], BigNumber(1e18))
+				expect.fail('The contract should throw when not given enough allowance')
+			} catch (e) {
+				if (
+					e.message ==
+					'The contract should throw when not given enough allowance'
+				) {
+					expect.fail(
+						'The contract should throw when not given enough allowance'
+					)
+				}
+				expect(e.reason).to.eq(
+					'Your allowance must equal or exceed the cost of participating in this auction'
+				)
+			}
+		})
+		it('should not allow you to participate in an auction when the contract is paused', async () => {
+			await ico.pause()
+			try {
+				await participateInAuction(accounts[0], initialLandCost)
+				expect.fail('The contract should throw when the auction is paused')
+			} catch (e) {
+				if (
+					e.message == 'The contract should throw when the auction is paused'
+				) {
+					expect.fail('The contract should throw when the auction is paused')
+				}
+				expect(e.reason).to.eq('Pausable: paused')
+			}
+		})
+		it('should update the activeLands array successfully after participating in an auction', async () => {
+			await participateInAuction(accounts[0], initialLandCost)
+			const activeLands = await ico.getActiveLands()
+			expect(activeLands.length).to.eq(1)
+		})
 	})
 
 	describe('redeemWonLand', async () => {
@@ -151,8 +198,8 @@ contract.only('ICO', accs => {
 	})
 })
 
-async function participateInAuction(sender, approvalAmount) {
-	const landId = String(631272015026578401)
+async function participateInAuction(sender, approvalAmount, _landId) {
+	const landId = _landId ? _landId : String(631272015026578401)
 
 	await ovrToken.approve(ico.address, approvalAmount, {
 		from: sender,

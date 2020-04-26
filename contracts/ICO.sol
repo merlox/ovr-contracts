@@ -371,5 +371,9 @@ contract ICO is Ownable, Pausable {
         
         return true;
     }
+
+    function getActiveLands() public view returns(uint256[] memory) {
+        return activeLands;
+    }
 }
 
