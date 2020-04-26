@@ -37,6 +37,8 @@ contract ICO is Ownable, Pausable {
     // Default state is NOT_STARTED
     enum AuctionState { NOT_STARTED, ACTIVE, ENDED }
 
+    enum LandOfferState { NOT_STARTED, ACTIVE, ACCEPTED, DECLINED, EXPIRED }
+
     struct Land {
         address owner;
         uint256 landToBuy;
@@ -49,16 +51,30 @@ contract ICO is Ownable, Pausable {
         bool onSale;
     }
 
+    struct LandOffer {
+        uint256 id; // The unique land offer identifier
+        address by;
+        uint256 landId;
+        uint256 price;
+        uint256 timestamp;
+        uint256 expirationDate;
+        LandOfferState state;
+    }
+
     event AuctionStarted(address indexed lastBidder, uint256 indexed landToBuy, uint256 paid, uint256 timestamp);
     event AuctionBid(address indexed newBidder, address indexed oldBidder, uint256 indexed landToBuy, uint256 paid, uint256 timestamp);
     event WonLand(address indexed winner, uint256 indexed landId, uint256 price);
     event LandSaleStarted(address indexed owner, uint256 indexed landId, uint256 price);
     // For lands that have been on sale but were removed by the owner
     event LandSaleCancelled(address indexed owner, uint256 indexed landId, uint256 price);
+    event LandOfferCreated(uint256 indexed id, address indexed by, uint256 indexed landId, uint256 price, uint256 timestamp, uint256 expirationDate);
+    event LandSold(uint256 indexed landId, address indexed oldOwner, address indexed buyer, uint256 price, uint256 timestamp);
+    event LandOfferDeclined(uint256 indexed landOfferId, uint256 indexed landId);
 
     address public ovrToken;
     address public ovrLand;
     uint256 public initialLandBid;
+    uint256 public lastLandOfferId; // A counter for setting up ids
     // The tokens that can be extracted by the owner after auctions have been won, 
     // the accomulated payments of all the winners
     uint256 public extractableTokens;
@@ -72,6 +88,10 @@ contract ICO is Ownable, Pausable {
     mapping (address => uint256[]) public ownedLands;
     // User => how many tokens he can cashback with redeemCashback()
     mapping (address => uint256) public cashbacks;
+    // LandID => All the LandOffer IDS each landId has
+    mapping (uint256 => uint256[]) public landOfferIds;
+    // LandOfferId => LandOffer
+    mapping (uint256 => LandOffer) public landOffers;
     // Lands that have initiated the auction process can be either active or ended
     uint256[] public activeLands;
 
@@ -211,14 +231,77 @@ contract ICO is Ownable, Pausable {
         }
     }
 
-    /// TODO This
     /// To buy a land on sale
-    /// The buyer must approve the land price in OVR tokens to purchase it
+    /// The buyer must approve the land price in OVR tokens to purchase it beforehand
     function buyLand(uint256 _landId) public whenNotPaused {
         Land storage land = lands[_landId];
+        address oldOwner = land.owner;
+        uint256 salePrice = land.sellPrice;
+        uint256 allowance = IERC20(ovrToken).allowance(msg.sender, address(this));
+        require(land.onSale, 'The land must be on sale to buy it');
+        require(allowance >= land.sellPrice, 'You must approve the right amount of OVR tokens to buy this land');
+        require(land.state == AuctionState.ENDED, 'The land auction must have been completed to buy it');
+        land.owner = msg.sender;
+        land.onSale = false;
+        land.sellPrice = 0;
+        IERC20(ovrToken).transferFrom(msg.sender, oldOwner, salePrice);
+        IERC721(ovrLand).safeTransferFrom(oldOwner, msg.sender, _landId);
+        emit LandSold(_landId, oldOwner, msg.sender, salePrice, now);
+    }
 
+    /// To offer someone to buy his land for a specific price
+    /// it doesn't matter if the land is on sale or not, this offer will be sent regardless
+    /// If the user already has an existing offer, override it with this new one
+    /// The frontend will have to get all the offers and check those made by the same person to only keep
+    /// the most recent one by looking at the timestamp
+    function offerToBuyLand(uint256 _landId, uint256 _price, uint256 _expirationDate) public whenNotPaused {
+        Land storage land = lands[_landId];
+        uint256 allowance = IERC20(ovrToken).allowance(msg.sender, address(this));
+        require(land.state == AuctionState.ENDED, 'The land auction must have been completed to send the offer to buy it');
+        require(allowance >= _price, 'You must approve the right amount of OVR tokens to offer to buy it');
 
-        IERC20(ovrToken).transferFrom(msg.sender, address(this), nextBid);
+        LandOffer memory newOffer = LandOffer(lastLandOfferId, msg.sender, _landId, _price, now, _expirationDate, LandOfferState.ACTIVE);
+        landOffers[lastLandOfferId] = newOffer;
+        landOfferIds[_landId].push(lastLandOfferId);
+
+        emit LandOfferCreated(lastLandOfferId, msg.sender, _landId, _price, now, _expirationDate);
+        lastLandOfferId++;
+    }
+
+    /// To respond to a buy land offer independently on whether your land is on sale or not
+    /// kinda like ebay does it with the custom buy offers
+    function respondToBuyOffer(uint256 _landOfferId, bool _accept) public whenNotPaused {
+        LandOffer storage landOffer = landOffers[_landOfferId];
+        Land storage land = lands[landOffer.landId];
+        require(landOffer.state == LandOfferState.ACTIVE, 'The offer must be active to be able to respond to it');
+        require(landOffer.expirationDate > now, 'The offer is expired');
+        require(land.state == AuctionState.ENDED, 'The auction state must be ended to accept the offer');
+        if (_accept) {
+            emit LandSold(land.landToBuy, land.owner, landOffer.by, landOffer.price, now);
+            landOffer.state = LandOfferState.ACCEPTED;
+            land.owner = landOffer.by;
+            land.onSale = false;
+            land.sellPrice = 0;
+            IERC20(ovrToken).transferFrom(landOffer.by, land.owner, landOffer.price);
+            IERC721(ovrLand).safeTransferFrom(land.owner, msg.sender, _landId);
+        } else {
+            landOffer.state = LandOfferState.DECLINED;
+            emit LandOfferDeclined(_landOfferId, land.landToBuy);
+        }
+    }
+
+    /// Returns an array with the the landOfferIds for a given land id
+    /// you can check each independently using the array ownedLands
+    function checkMyLandOffers(uint256 _landId) public view returns(uint256[] results) {
+        uint256[] memory results;
+        uint256 counter = 0;
+        for(uint256 i = 0; i < landOffers.length; i++) {
+            if (landOffers[i].landId == _landId) {
+                results[counter] = landOffers[i].id;
+                counter++;
+            }
+        }
+        return results;
     }
 
     /// Returns the landIds you won so you know which landIds you can redeem
