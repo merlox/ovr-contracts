@@ -1,6 +1,9 @@
+Preparation:
+- Send the tokens you want to distribute to the TokenBuy contract for it to work.
 - When you deploy the ERC721, you must set the ICO contracts as the approved for all your tokens by executing the function setApprovalForAll()
 - When users want to purchase tokens, they must first approve the right amount of USDT, USDC or DAI to purchase. No need to approve ETH since it's not a token.
 
+Information:
 - Epoch 1 will allow users to auction for lands with the digit 00, 17
 - Epoch 2 will allow users to auction for lands with the digit 18, 35
 - Epoch 3 will allow users to auction for lands with the digit 36, 53
@@ -16,3 +19,75 @@
 -- hex: 8c2ba8d96b0d1ff, int: 631272015066616319
 
 So we check the last 4 digits for the epochs
+
+
+Testing
+---
+
+constructor:
+    - it should set the OVR token, land and initial land bid successfully
+
+participateInAuction:
+    - it should not allow you to participate in an auction with a land outside the current epoch
+    - it should not allow you to participate in an ended auction
+    - it should create a new auction successfully
+    - it should be able to bid for an already started auction
+    - it should fail to participate in an auction when not given enough token allowance
+    - it should not allow you to participate in an auction when the contract is paused
+    - it should update the auctions[] array successfully after participating in an auction
+
+redeemWonLand:
+    - it should be able to redeem a land that you won
+    - it shouldn't allow you to redeem a land that you haven't won
+    - it shouldn't allow you to redeem a land before its auction is finished
+    - it should send you the OVRLand token after redeeming the land successfully
+    - it should set the cashbackAmount correctly after redeeming the land in the lands mapping
+
+redeemCashback:
+    - it should allow you to redeem a cashback successfully after winning an auction
+    - it shouldn't allow you to cashback before 30 days after the land auction has been completed
+    - it shouldn't allow you to redeem a casback that's been redeemed already
+    - it shouldn't allow you to redeem a cashback that isn't yours
+    - it should send you the right amount of OVR tokens after redeeming the cashback
+
+extractTokens:
+    - it should be able to extract OVR tokens from this contract
+    - it shouldn't allow you to extract tokens if you're not the owner of the contract
+
+extractEth:
+    - it should be able to extract ETH from the contract
+    - it shouldn't be able to extract ETH if you're not the contract owner
+
+putLandOnSale:
+    - it should be able to sell a land successfully
+    - it shouldn't allow you to sell a land you don't own
+    - it shouldn't allow you to sell a land before its auction is finished
+
+buyLand:
+    - it should buy a land successfully
+    - it shouldn't allow you to buy a land not on sale
+    - it shouldn't allow you to buy a land with a snaller allowance than required
+    - it shouldn't allow you to buy a land before ending its auction
+    - it should send the right amount of OVR tokens to the seller
+    - it should send the right OVR land token to the buyer
+
+offerToBuyLand:
+    - it should send an offer successfully
+    - it shouldn't send an offer if the land is still in the auction state
+    - it shouldn't send an offer without approving the right token amount
+    - it shouldn't send an offer with a wrong expiration date
+    - it shouldn't send an offer to a non-existing land
+
+respondToBuyOffer:
+    - it should accept a buy offer successfully
+    - it should reject a buy offer successfully
+    - it shouldn't respond to a non-existing offer
+    - it shouldn't respond to an expired offer
+    - it shouldn't respond to an offer with an active auction
+    - it shouldn't allow you to respond to an offer without being the land owner
+
+checkMyLandOffers:
+    - it should send you all the land offers for a given id
+
+checkWonLands:
+    - it should show you the land that you've won
