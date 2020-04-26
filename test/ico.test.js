@@ -1,3 +1,4 @@
+const BigNumber = require('bignumber.js')
 const ICO = artifacts.require('ICO')
 const OVRToken = artifacts.require('OVRToken')
 const OVRLand = artifacts.require('OVRLand')
@@ -5,11 +6,13 @@ let ovrToken = {}
 let ovrLand = {}
 let ico = {}
 let accounts = {} // Global accounts
-const initialLandCost = String(10e18)
-const initialTokens = String(1000e18) // 1k tokens for each account
+let initialLandCost
+let initialTokens
 
 contract.only('ICO', accs => {
 	accounts = accs
+	initialLandCost = BigNumber(10e18)
+	initialTokens = BigNumber(1000e18) // 1k tokens for each account
 
 	beforeEach(async () => {
 		ovrToken = await OVRToken.new()
@@ -27,21 +30,33 @@ contract.only('ICO', accs => {
 		const initialBid = await ico.initialLandBid()
 		expect(token).to.eq(ovrToken.address)
 		expect(land).to.eq(ovrLand.address)
-		expect(String(initialBid)).to.eq(initialLandCost)
+		expect(BigNumber(initialBid)).to.deep.equal(BigNumber(initialLandCost))
 	})
 
 	describe('participateInAuction', async () => {
 		it('should create a new auction successfully', async () => {
-			await participateInAuction(accounts[0])
+			await participateInAuction(accounts[0], initialLandCost)
 		})
 		it('should be able to bid for an already started auction', async () => {
-			await participateInAuction(accounts[0])
-			await participateInAuction(accounts[1])
+			await participateInAuction(accounts[0], initialLandCost)
+			await participateInAuction(accounts[1], BigNumber(initialLandCost * 2))
 		})
-		it('should not allow you to participate in an ended auction')
-		it(
-			'should not allow you to participate in an auction with a land outside the current epoch'
-		)
+		it('should not allow you to participate in an ended auction', async () => {
+			await participateInAuction(accounts[0], initialLandCost)
+			await advanceTimeAndBlock(25 * 60 * 60) // 25 hours
+			try {
+				await participateInAuction(accounts[1], BigNumber(initialLandCost * 2))
+				expect.fail('The contract should throw when bidding ended auctions')
+			} catch (e) {
+				if (
+					e.message == 'The contract should throw when bidding ended auctions'
+				) {
+					expect.fail('The contract should throw when bidding ended auctions')
+				}
+				expect(e.reason).to.eq('This land auction has ended')
+			}
+		})
+		it('should not allow you to participate in an auction with a land outside the current epoch', async () => {})
 		it(
 			'should fail to participate in an auction when not given enough token allowance'
 		)
@@ -136,17 +151,65 @@ contract.only('ICO', accs => {
 	})
 })
 
-async function participateInAuction(sender) {
+async function participateInAuction(sender, approvalAmount) {
 	const landId = String(631272015026578401)
 
-	await ovrToken.approve(ico.address, initialLandCost, {
+	await ovrToken.approve(ico.address, approvalAmount, {
 		from: sender,
 	})
 	await ico.participateInAuction(landId, {
 		from: sender,
 	})
 	const land = await ico.lands(landId)
-	expect(land.owner).to.eq(accounts[0])
-	expect(String(land.paid)).to.eq(initialLandCost)
+	expect(land.owner).to.eq(sender)
+	expect(BigNumber(land.paid).toFixed()).to.eql(
+		BigNumber(approvalAmount).toFixed()
+	)
 	expect(String(land.state)).to.eq('1')
+}
+
+const advanceTimeAndBlock = async time => {
+	await advanceTime(time)
+	await advanceBlock()
+
+	return Promise.resolve(web3.eth.getBlock('latest'))
+}
+
+const advanceTime = time => {
+	return new Promise((resolve, reject) => {
+		web3.currentProvider.send(
+			{
+				jsonrpc: '2.0',
+				method: 'evm_increaseTime',
+				params: [time],
+				id: new Date().getTime(),
+			},
+			(err, result) => {
+				if (err) {
+					return reject(err)
+				}
+				return resolve(result)
+			}
+		)
+	})
+}
+
+const advanceBlock = () => {
+	return new Promise((resolve, reject) => {
+		web3.currentProvider.send(
+			{
+				jsonrpc: '2.0',
+				method: 'evm_mine',
+				id: new Date().getTime(),
+			},
+			(err, result) => {
+				if (err) {
+					return reject(err)
+				}
+				const newBlockHash = web3.eth.getBlock('latest').hash
+
+				return resolve(newBlockHash)
+			}
+		)
+	})
 }

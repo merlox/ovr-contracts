@@ -23,6 +23,7 @@
   "homepage": "https://github.com/merlox/ovr-contracts#readme",
   "dependencies": {
     "@openzeppelin/contracts": "^2.5.0",
-    "@truffle/hdwallet-provider": "^1.0.34"
+    "@truffle/hdwallet-provider": "^1.0.34",
+    "bignumber.js": "^9.0.0"
   }
 }

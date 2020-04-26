@@ -47,7 +47,6 @@ contract ICO is Ownable, Pausable {
         AuctionState state;
         uint256 cashbackAmount;
         bool isCashbackRedeemed;
-
         // Marketplace functionality
         uint256 sellPrice;
         bool onSale;
@@ -125,9 +124,9 @@ contract ICO is Ownable, Pausable {
         Land storage landToBuy = lands[_landId];
         uint256 allowance = IERC20(ovrToken).allowance(msg.sender, address(this));
 
-        require(now.sub(landToBuy.lastBidTimestamp) >= 24 hours, 'This land auction has ended');
-
         if (landToBuy.state == AuctionState.ACTIVE) {
+            require(now.sub(landToBuy.lastBidTimestamp) < 24 hours, 'This land auction has ended');
+
             // The auction for this land ID has been started
             // The next bidder must pay double the last price
             uint256 nextBid = landToBuy.paid.mul(2);
@@ -151,6 +150,8 @@ contract ICO is Ownable, Pausable {
             // to cover this auction too
             require(allowance >= initialLandBid, 'Your allowance must equal or exceed the cost of participating in this auction');
             lands[_landId] = Land(msg.sender, _landId, initialLandBid, now, AuctionState.ACTIVE, 0, false, 0, false);
+            IERC20(ovrToken).transferFrom(msg.sender, address(this), initialLandBid);
+            userTokensInActiveAuctions[msg.sender] = initialLandBid;
             activeLands.push(_landId);
             emit AuctionStarted(msg.sender, _landId, initialLandBid, now);
         } else {
@@ -333,30 +334,42 @@ contract ICO is Ownable, Pausable {
         if (currentMonth == 1) {
             if (landIdDigits <= 17) {
                 return true;
+            } else {
+                return false;
             }
         } else if (currentMonth == 2) {
             if (landIdDigits > 17 && landIdDigits <= 35) {
                 return true;
+            } else {
+                return false;
             }
         } else if (currentMonth == 3) {
             if (landIdDigits > 35 && landIdDigits <= 53) {
                 return true;
+            } else {
+                return false;
             }
         } else if (currentMonth == 4) {
             if (landIdDigits > 53 && landIdDigits <= 70) {
                 return true;
+            } else {
+                return false;
             }
         } else if (currentMonth == 5) {
             if (landIdDigits > 70 && landIdDigits <= 88) {
                 return true;
+            } else {
+                return false;
             }
         } else if (currentMonth == 6) {
             if (landIdDigits > 88 && landIdDigits <= 99) {
                 return true;
+            } else {
+                return false;
             }
         }
-
-        return false;
+        
+        return true;
     }
 }
 
