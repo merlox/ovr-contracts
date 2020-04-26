@@ -21,6 +21,7 @@ contract.only('ICO', accs => {
 			await ovrToken.transfer(accounts[i], initialTokens)
 		}
 		ico = await ICO.new(ovrToken.address, ovrLand.address, initialLandCost)
+		await ovrLand.addMinter(ico.address) // Make the ICO contract a ERC721 minter
 	})
 
 	it('should set the OVR token, land and initial land bid successfully', async () => {
@@ -116,33 +117,202 @@ contract.only('ICO', accs => {
 	})
 
 	describe('redeemWonLand', async () => {
-		it('should be able to redeem a land that you won')
-		it("shouldn't allow you to redeem a land that you haven't won")
-		it("shouldn't allow you to redeem a land before its auction is finished")
-		it(
-			'should send you the OVRLand token after redeeming the land successfully'
-		)
-		it(
-			'should set the cashbackAmount correctly after redeeming the land in the lands mapping'
-		)
+		it('should be able to redeem a land that you won', async () => {
+			const landId = String(631272015026578401)
+			await participateInAuction(accounts[0], initialLandCost, landId)
+			await advanceTimeAndBlock(25 * 60 * 60) // 25 hours
+			await ico.redeemWonLand(landId)
+		})
+		it("shouldn't allow you to redeem a land that you haven't won", async () => {
+			const landId = String(631272015026578401)
+			const landId2 = String(631244444444444444)
+			await participateInAuction(accounts[0], initialLandCost, landId)
+			await advanceTimeAndBlock(25 * 60 * 60) // 25 hours
+
+			try {
+				await ico.redeemWonLand(landId2)
+				expect.fail(
+					'The contract should throw when trying to redeem an external land'
+				)
+			} catch (e) {
+				if (
+					e.message ==
+					'The contract should throw when trying to redeem an external land'
+				) {
+					expect.fail(
+						'The contract should throw when trying to redeem an external land'
+					)
+				}
+				expect(e.reason).to.eq('You must be the land winner to redeem it')
+			}
+		})
+		it("shouldn't allow you to redeem a land before its auction is finished", async () => {
+			const landId = String(631272015026578401)
+			await participateInAuction(accounts[0], initialLandCost)
+
+			try {
+				await ico.redeemWonLand(landId)
+				expect.fail(
+					'The contract should throw when trying to redeem a land still in auction'
+				)
+			} catch (e) {
+				if (
+					e.message ==
+					'The contract should throw when trying to redeem a land still in auction'
+				) {
+					expect.fail(
+						'The contract should throw when trying to redeem a land still in auction'
+					)
+				}
+				expect(e.reason).to.eq(
+					"You can't redeem this land until its auction is finished"
+				)
+			}
+		})
+		it('should send you the OVRLand token after redeeming the land successfully', async () => {
+			const landId = String(631272015026578401)
+			await participateInAuction(accounts[0], initialLandCost, landId)
+			await advanceTimeAndBlock(25 * 60 * 60) // 25 hours
+			await ico.redeemWonLand(landId)
+			const owner = await ovrLand.ownerOf(landId)
+			expect(owner).to.eq(accounts[0])
+		})
+		it('should set the cashbackAmount correctly after redeeming the land in the lands mapping', async () => {
+			const landId = String(631272015026578401)
+			await participateInAuction(accounts[0], initialLandCost, landId)
+			await advanceTimeAndBlock(25 * 60 * 60) // 25 hours
+			await ico.redeemWonLand(landId)
+			const land = await ico.lands(landId)
+			const cashback = BigNumber(land.paid * 0.95).toFixed()
+			expect(BigNumber(land.cashbackAmount).toFixed()).to.eq(cashback)
+		})
 	})
 
 	describe('redeemCashback', async () => {
-		it(
-			'should allow you to redeem a cashback successfully after winning an auction'
-		)
-		it(
-			"shouldn't allow you to cashback before 30 days after the land auction has been completed"
-		)
-		it("shouldn't allow you to redeem a casback that's been redeemed already")
-		it("shouldn't allow you to redeem a cashback that isn't yours")
-		it(
-			'should send you the right amount of OVR tokens after redeeming the cashback'
-		)
+		it('should allow you to redeem a cashback successfully after winning an auction', async () => {
+			const tokensBefore = await ovrToken.balanceOf(accounts[0])
+			const landId = String(631272015026578401)
+			await participateInAuction(accounts[0], initialLandCost, landId)
+			await advanceTimeAndBlock(25 * 60 * 60) // 25 hours
+			await ico.redeemWonLand(landId)
+			await advanceTimeAndBlock(30 * 24 * 60 * 60) // 30 days
+			await ico.redeemCashback(landId)
+			const tokensAfter = await ovrToken.balanceOf(accounts[0])
+			// Considering the 95% initial month cashback
+			const before = BigNumber(tokensBefore - initialLandCost * 0.05).toFixed()
+
+			expect(before).to.eq(BigNumber(tokensAfter).toFixed())
+		})
+		it("shouldn't allow you to cashback before 30 days after the land auction has been completed", async () => {
+			const landId = String(631272015026578401)
+			await participateInAuction(accounts[0], initialLandCost, landId)
+			await advanceTimeAndBlock(25 * 60 * 60) // 25 hours
+			await ico.redeemWonLand(landId)
+
+			try {
+				await ico.redeemCashback(landId)
+				expect.fail(
+					'The contract should throw when trying to redeem a cashback before 30 days'
+				)
+			} catch (e) {
+				if (
+					e.message ==
+					'The contract should throw when trying to redeem a cashback before 30 days'
+				) {
+					expect.fail(
+						'The contract should throw when trying to redeem a cashback before 30 days'
+					)
+				}
+				expect(e.reason).to.eq("You can't redeem a cashback before 30 days")
+			}
+		})
+		it("shouldn't redeem a cashback that hasn't been land redeemed yet", async () => {
+			const landId = String(631272015026578401)
+			await participateInAuction(accounts[0], initialLandCost, landId)
+			await advanceTimeAndBlock(25 * 60 * 60) // 25 hours
+			await advanceTimeAndBlock(30 * 24 * 60 * 60) // 30 days
+
+			try {
+				await ico.redeemCashback(landId)
+				expect.fail(
+					'The contract should throw when trying to redeem a cashback before the land has been redeemed'
+				)
+			} catch (e) {
+				console.log('e', e)
+				if (
+					e.message ==
+					'The contract should throw when trying to redeem a cashback before the land has been redeemed'
+				) {
+					expect.fail(
+						'The contract should throw when trying to redeem a cashback before the land has been redeemed'
+					)
+				}
+				expect(e.reason).to.eq(
+					'The land must be redeemed before getting its cashback'
+				)
+			}
+		})
+		it("shouldn't redeem a cashback that's been redeemed already", async () => {
+			const landId = String(631272015026578401)
+			await participateInAuction(accounts[0], initialLandCost, landId)
+			await advanceTimeAndBlock(25 * 60 * 60) // 25 hours
+			await ico.redeemWonLand(landId)
+			await advanceTimeAndBlock(30 * 24 * 60 * 60) // 30 days
+			await ico.redeemCashback(landId)
+
+			try {
+				await ico.redeemCashback(landId)
+				expect.fail(
+					'The contract should throw when trying to redeem a cashback that has been redeemed already'
+				)
+			} catch (e) {
+				if (
+					e.message ==
+					'The contract should throw when trying to redeem a cashback that has been redeemed already'
+				) {
+					expect.fail(
+						'The contract should throw when trying to redeem a cashback that has been redeemed already'
+					)
+				}
+				expect(e.reason).to.eq(
+					'The cashback has already been redeemed for this land'
+				)
+			}
+		})
+		it("shouldn't allow you to redeem a cashback that isn't yours", async () => {
+			const landId = String(631272015026578401)
+			await participateInAuction(accounts[0], initialLandCost, landId)
+			await advanceTimeAndBlock(25 * 60 * 60) // 25 hours
+			await ico.redeemWonLand(landId)
+			await advanceTimeAndBlock(30 * 24 * 60 * 60) // 30 days
+
+			try {
+				await ico.redeemCashback(landId, {
+					from: accounts[1]
+				})
+				expect.fail(
+					"The contract should throw when trying to redeem a cashback that isn't yours"
+				)
+			} catch (e) {
+				if (
+					e.message ==
+					"The contract should throw when trying to redeem a cashback that isn't yours"
+				) {
+					expect.fail(
+						"The contract should throw when trying to redeem a cashback that isn't yours"
+					)
+				}
+				expect(e.reason).to.eq(
+					'You must be the land owner to redeem its cashback'
+				)
+			}
+		})
 	})
 
 	describe('extractTokens', async () => {
-		it('should be able to extract OVR tokens from this contract')
+		it('should be able to extract OVR tokens from this contract', async () => {
+			// The contract earns money when a land is sold
+		})
 		it(
 			"shouldn't allow you to extract tokens if you're not the owner of the contract"
 		)

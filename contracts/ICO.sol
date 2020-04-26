@@ -2,9 +2,29 @@ pragma solidity ^0.5.0;
 
 import '@openzeppelin/contracts/math/SafeMath.sol';
 import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
-import '@openzeppelin/contracts/token/ERC721/IERC721.sol';
 import '@openzeppelin/contracts/lifecycle/Pausable.sol';
-// Custom modified version to use String tokenIds instead of uints
+import "@openzeppelin/contracts/introspection/IERC165.sol";
+
+/**
+ * @dev Required interface of an ERC721 compliant contract.
+ */
+contract IERC721 is IERC165 {
+    event Transfer(address indexed from, address indexed to, uint256 indexed tokenId);
+    event Approval(address indexed owner, address indexed approved, uint256 indexed tokenId);
+    event ApprovalForAll(address indexed owner, address indexed operator, bool approved);
+    function balanceOf(address owner) public view returns (uint256 balance);
+    function ownerOf(uint256 tokenId) public view returns (address owner);
+    function safeTransferFrom(address from, address to, uint256 tokenId) public;
+    function transferFrom(address from, address to, uint256 tokenId) public;
+    function approve(address to, uint256 tokenId) public;
+    function getApproved(uint256 tokenId) public view returns (address operator);
+    function setApprovalForAll(address operator, bool _approved) public;
+    function isApprovedForAll(address owner, address operator) public view returns (bool);
+    function safeTransferFrom(address from, address to, uint256 tokenId, bytes memory data) public;
+
+    function mintLand(address to, uint256 OVRLandID) public returns (bool);
+}
+
 
 contract Ownable {
     address payable public owner;
@@ -50,6 +70,7 @@ contract ICO is Ownable, Pausable {
         // Marketplace functionality
         uint256 sellPrice;
         bool onSale;
+        bool hasBeenRedeemed;
     }
 
     struct LandOffer {
@@ -149,7 +170,7 @@ contract ICO is Ownable, Pausable {
             // 10 approved and wants to participate in 5 auctions check that he has enough
             // to cover this auction too
             require(allowance >= initialLandBid, 'Your allowance must equal or exceed the cost of participating in this auction');
-            lands[_landId] = Land(msg.sender, _landId, initialLandBid, now, AuctionState.ACTIVE, 0, false, 0, false);
+            lands[_landId] = Land(msg.sender, _landId, initialLandBid, now, AuctionState.ACTIVE, 0, false, 0, false, false);
             IERC20(ovrToken).transferFrom(msg.sender, address(this), initialLandBid);
             userTokensInActiveAuctions[msg.sender] = initialLandBid;
             activeLands.push(_landId);
@@ -162,10 +183,10 @@ contract ICO is Ownable, Pausable {
     /// To redeem the land that you won in an auction
     function redeemWonLand(uint256 _landId) public whenNotPaused {
         Land storage land = lands[_landId];
-        if (now.sub(land.lastBidTimestamp) > 24 hours) {
-            lands[_landId].state = AuctionState.ENDED;
+        if (now.sub(land.lastBidTimestamp) >= 24 hours) {
+            land.state = AuctionState.ENDED;
         }
-        require(land.state != AuctionState.ENDED, "You can't redeem this land until its auction is finished");
+        require(land.state == AuctionState.ENDED, "You can't redeem this land until its auction is finished");
         require(land.owner == msg.sender, 'You must be the land winner to redeem it');
         uint256 cashbackPercentage;
         uint256 monthPurchasedSinceBeginning = now.sub(contractCreationDate).div(30 days) + 1;
@@ -193,9 +214,10 @@ contract ICO is Ownable, Pausable {
         uint256 cashback = land.paid.mul(cashbackPercentage).div(100);
         cashbacks[msg.sender] = cashbacks[msg.sender].add(cashback);
         land.cashbackAmount = cashback;
+        land.hasBeenRedeemed = true;
 
         // Transfer the land to the user
-        IERC721(ovrLand).safeTransferFrom(owner, msg.sender, _landId);
+        IERC721(ovrLand).mintLand(msg.sender, _landId);
         ownedLands[msg.sender].push(_landId);
 
         emit WonLand(msg.sender, _landId, land.paid);
@@ -206,6 +228,7 @@ contract ICO is Ownable, Pausable {
     function redeemCashback(uint256 _landId) public whenNotPaused {
         Land storage land = lands[_landId];
         require(!land.isCashbackRedeemed, 'The cashback has already been redeemed for this land');
+        require(land.hasBeenRedeemed, 'The land must be redeemed before getting its cashback');
         require(land.owner == msg.sender, 'You must be the land owner to redeem its cashback');
         require(now.sub(land.lastBidTimestamp) >= 30 days, "You can't redeem a cashback before 30 days");
         uint256 tempAmount = land.cashbackAmount;
