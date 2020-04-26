@@ -6,6 +6,7 @@ let ovrLand = {}
 let ico = {}
 let accounts = {} // Global accounts
 const initialLandCost = String(10e18)
+const initialTokens = String(1000e18) // 1k tokens for each account
 
 contract.only('ICO', accs => {
 	accounts = accs
@@ -13,6 +14,9 @@ contract.only('ICO', accs => {
 	beforeEach(async () => {
 		ovrToken = await OVRToken.new()
 		ovrLand = await OVRLand.new()
+		for (let i = 0; i < 9; i++) {
+			await ovrToken.transfer(accounts[i], initialTokens)
+		}
 		ico = await ICO.new(ovrToken.address, ovrLand.address, initialLandCost)
 	})
 
@@ -28,9 +32,12 @@ contract.only('ICO', accs => {
 
 	describe('participateInAuction', async () => {
 		it('should create a new auction successfully', async () => {
-			await participateInAuction()
+			await participateInAuction(accounts[0])
 		})
-		it('should be able to bid for an already started auction')
+		it('should be able to bid for an already started auction', async () => {
+			await participateInAuction(accounts[0])
+			await participateInAuction(accounts[1])
+		})
 		it('should not allow you to participate in an ended auction')
 		it(
 			'should not allow you to participate in an auction with a land outside the current epoch'
@@ -129,10 +136,15 @@ contract.only('ICO', accs => {
 	})
 })
 
-async function participateInAuction() {
+async function participateInAuction(sender) {
 	const landId = String(631272015026578401)
-	await ovrToken.approve(ico.address, initialLandCost)
-	await ico.participateInAuction(landId)
+
+	await ovrToken.approve(ico.address, initialLandCost, {
+		from: sender,
+	})
+	await ico.participateInAuction(landId, {
+		from: sender,
+	})
 	const land = await ico.lands(landId)
 	expect(land.owner).to.eq(accounts[0])
 	expect(String(land.paid)).to.eq(initialLandCost)
