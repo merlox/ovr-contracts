@@ -167,7 +167,7 @@ contract ICO is Ownable, Pausable {
         require(land.state != AuctionState.ENDED, "You can't redeem this land until its auction is finished");
         require(land.owner == msg.sender, 'You must be the land winner to redeem it');
         uint256 cashbackPercentage;
-        uint256 monthPurchasedSinceBeginning = now.sub(contractCreationDate).div(30 days);
+        uint256 monthPurchasedSinceBeginning = now.sub(contractCreationDate).div(30 days) + 1;
         if (monthPurchasedSinceBeginning == 1) {
             cashbackPercentage = 95;
         } else if (monthPurchasedSinceBeginning == 2) {
@@ -325,9 +325,9 @@ contract ICO is Ownable, Pausable {
     }
 
     /// Checks if the token you want to buy is within the epoch available
-    /// @return bool True if it's in aA valid epoch and false if not
+    /// @return bool True if it's in a valid epoch and false if not
     function checkEpoch(uint256 _landId) public view returns(bool) {
-        uint256 currentMonth = now.sub(contractCreationDate).div(30);
+        uint256 currentMonth = now.sub(contractCreationDate).div(30) + 1;
         // Extract the last 2 digits
         uint256 landIdDigits = _landId % 100;
         if (currentMonth == 1) {

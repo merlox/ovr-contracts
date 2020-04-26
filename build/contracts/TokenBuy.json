@@ -14562,7 +14562,7 @@
   },
   "networks": {},
   "schemaVersion": "3.1.0",
-  "updatedAt": "2020-04-26T10:45:22.866Z",
+  "updatedAt": "2020-04-26T18:44:19.914Z",
   "devdoc": {
     "methods": {
       "buyTokensWithDai(uint256)": {
