@@ -54,10 +54,6 @@ extractTokens:
     - it should be able to extract OVR tokens from this contract
     - it shouldn't allow you to extract tokens if you're not the owner of the contract
 
-extractEth:
-    - it should be able to extract ETH from the contract
-    - it shouldn't be able to extract ETH if you're not the contract owner
-
 putLandOnSale:
     - it should be able to sell a land successfully
     - it shouldn't allow you to sell a land you don't own

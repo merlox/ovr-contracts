@@ -2,8 +2,9 @@ pragma solidity ^0.5.0;
 
 import '@openzeppelin/contracts/math/SafeMath.sol';
 import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
+import '@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol';
 import '@openzeppelin/contracts/lifecycle/Pausable.sol';
-import "@openzeppelin/contracts/introspection/IERC165.sol";
+import '@openzeppelin/contracts/introspection/IERC165.sol';
 
 /**
  * @dev Required interface of an ERC721 compliant contract.
@@ -51,7 +52,7 @@ contract Ownable {
 
 /// The ICO contract to run auctions and buy OVRLands (ERC721) after winning in exchange for OVRTokens (ERC20)
 /// Also handles land sells and purchases for people that want to exchange their land once they got it
-contract ICO is Ownable, Pausable {
+contract ICO is Ownable, Pausable, IERC721Receiver {
     using SafeMath for uint256;
 
     // Default state is NOT_STARTED
@@ -71,6 +72,7 @@ contract ICO is Ownable, Pausable {
         uint256 sellPrice;
         bool onSale;
         bool hasBeenRedeemed;
+        uint256 lastUpdateTimestamp;
     }
 
     struct LandOffer {
@@ -170,7 +172,7 @@ contract ICO is Ownable, Pausable {
             // 10 approved and wants to participate in 5 auctions check that he has enough
             // to cover this auction too
             require(allowance >= initialLandBid, 'Your allowance must equal or exceed the cost of participating in this auction');
-            lands[_landId] = Land(msg.sender, _landId, initialLandBid, now, AuctionState.ACTIVE, 0, false, 0, false, false);
+            lands[_landId] = Land(msg.sender, _landId, initialLandBid, now, AuctionState.ACTIVE, 0, false, 0, false, false, now);
             IERC20(ovrToken).transferFrom(msg.sender, address(this), initialLandBid);
             userTokensInActiveAuctions[msg.sender] = initialLandBid;
             activeLands.push(_landId);
@@ -245,24 +247,27 @@ contract ICO is Ownable, Pausable {
         IERC20(_tokenToExtract).transfer(owner, _amount);
     }
 
-    /// To extract the ether stored in this contract
-    function extractEth() public onlyOwner whenNotPaused {
-        owner.transfer(address(this).balance);
-    }
-
     /// To put on sell a land you own
     /// Note: the price can be 0 to give it away for free
+    /// The seller must approve the ERC721 token to the ICO contract ONLY if _onSale is true
     /// @param _onSale To indicate whether you want to put it on sale or remove it from the sale
     function putLandOnSale(uint256 _landId, uint256 _price, bool _onSale) public whenNotPaused {
         Land storage land = lands[_landId];
         require(msg.sender == land.owner, 'You must be the land owner to put it on sale');
         require(land.state == AuctionState.ENDED, 'The land auction must have been completed to put it on sale');
-        landsOnSaleOrSold.push(_landId);
+        if (_onSale) {
+            address approved = IERC721(ovrLand).getApproved(_landId);
+            require(approved == address(this), 'You must approve this contract to manage your ERC721 token');
+        }
         land.onSale = _onSale;
         land.sellPrice = _price;
+        land.lastUpdateTimestamp = now;
+        landsOnSaleOrSold.push(_landId);
         if (_onSale) {
+            IERC721(ovrLand).safeTransferFrom(msg.sender, address(this), _landId);
             emit LandSaleStarted(land.owner, _landId, _price);
         } else {
+            IERC721(ovrLand).safeTransferFrom(address(this), msg.sender, _landId);
             emit LandSaleCancelled(land.owner, _landId);
         }
     }
@@ -280,8 +285,9 @@ contract ICO is Ownable, Pausable {
         land.owner = msg.sender;
         land.onSale = false;
         land.sellPrice = 0;
+        land.lastUpdateTimestamp = now;
         IERC20(ovrToken).transferFrom(msg.sender, oldOwner, salePrice);
-        IERC721(ovrLand).safeTransferFrom(oldOwner, msg.sender, _landId);
+        IERC721(ovrLand).safeTransferFrom(address(this), msg.sender, _landId);
         emit LandSold(_landId, oldOwner, msg.sender, salePrice, now);
     }
 
@@ -397,6 +403,16 @@ contract ICO is Ownable, Pausable {
 
     function getActiveLands() public view returns(uint256[] memory) {
         return activeLands;
+    }
+
+    function getLandsOnSaleOrSold() public view returns(uint256[] memory) {
+        return landsOnSaleOrSold;
+    }
+
+    function onERC721Received(address operator, address from, uint256 tokenId, bytes memory data) public returns (bytes4) {
+        // Both return values work
+        return this.onERC721Received.selector;
+        // return bytes4(keccak256("onERC721Received(address,address,uint256,bytes)"));
     }
 }
 

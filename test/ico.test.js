@@ -238,7 +238,6 @@ contract.only('ICO', accs => {
 					'The contract should throw when trying to redeem a cashback before the land has been redeemed'
 				)
 			} catch (e) {
-				console.log('e', e)
 				if (
 					e.message ==
 					'The contract should throw when trying to redeem a cashback before the land has been redeemed'
@@ -288,7 +287,7 @@ contract.only('ICO', accs => {
 
 			try {
 				await ico.redeemCashback(landId, {
-					from: accounts[1]
+					from: accounts[1],
 				})
 				expect.fail(
 					"The contract should throw when trying to redeem a cashback that isn't yours"
@@ -312,32 +311,214 @@ contract.only('ICO', accs => {
 	describe('extractTokens', async () => {
 		it('should be able to extract OVR tokens from this contract', async () => {
 			// The contract earns money when a land is sold
-		})
-		it(
-			"shouldn't allow you to extract tokens if you're not the owner of the contract"
-		)
-	})
+			const initialBalanceOwner = ovrToken.balanceOf(accounts[0])
+			const landId = String(631272015026578401)
+			await participateInAuction(accounts[1], initialLandCost, landId)
+			await advanceTimeAndBlock(25 * 60 * 60) // 25 hours
+			await ico.redeemWonLand(landId, {
+				from: accounts[1],
+			})
 
-	describe('extractEth', async () => {
-		it('should be able to extract ETH from the contract')
-		it("shouldn't be able to extract ETH if you're not the contract owner")
+			await ico.extractTokens(ovrToken.address, initialLandCost)
+			const finalBalanceOwner = ovrToken.balanceOf(accounts[0])
+
+			expect(BigNumber(initialBalanceOwner + initialLandCost).toFixed()).to.eq(
+				BigNumber(finalBalanceOwner).toFixed()
+			)
+		})
+		it("shouldn't allow you to extract tokens if you're not the owner of the contract", async () => {
+			const landId = String(631272015026578401)
+			await participateInAuction(accounts[1], initialLandCost, landId)
+			await advanceTimeAndBlock(25 * 60 * 60) // 25 hours
+			await ico.redeemWonLand(landId, {
+				from: accounts[1],
+			})
+
+			try {
+				await ico.extractTokens(ovrToken.address, initialLandCost, {
+					from: accounts[1],
+				})
+				expect.fail("You aren't allowed to extract tokens from the contract")
+			} catch (e) {
+				if (
+					e.message == "You aren't allowed to extract tokens from the contract"
+				) {
+					expect.fail("You aren't allowed to extract tokens from the contract")
+				}
+				expect(e.reason).to.eq('Ownable: caller is not the owner')
+			}
+		})
 	})
 
 	describe('putLandOnSale', async () => {
-		it('should be able to sell a land successfully')
-		it("shouldn't allow you to sell a land you don't own")
-		it("shouldn't allow you to sell a land before its auction is finished")
+		it('should be able to put a land on sale successfully', async () => {
+			const landId = String(631272015026578401)
+			await winLandAuction(accounts[0])
+			await ovrLand.approve(ico.address, landId)
+			await ico.putLandOnSale(landId, initialLandCost, true)
+
+			// Check its on sale
+			const landsOnSale = await ico.getLandsOnSaleOrSold()
+			const land = await ico.lands(landId)
+			expect(landsOnSale.length).to.eq(1)
+			expect(BigNumber(landsOnSale[0]).toFixed()).to.eq(landId)
+			expect(land.onSale).to.eq(true)
+			expect(BigNumber(land.sellPrice).toFixed()).to.eq(
+				BigNumber(initialLandCost).toFixed()
+			)
+		})
+		it('should be able to remove a land from the market successfully', async () => {
+			const landId = String(631272015026578401)
+			await winLandAuction(accounts[0])
+			await ovrLand.approve(ico.address, landId)
+			await ico.putLandOnSale(landId, initialLandCost, true)
+
+			// Check its on sale
+			let landsOnSale = await ico.getLandsOnSaleOrSold()
+			let land = await ico.lands(landId)
+			expect(landsOnSale.length).to.eq(1)
+			expect(BigNumber(landsOnSale[0]).toFixed()).to.eq(landId)
+			expect(land.onSale).to.eq(true)
+			expect(BigNumber(land.sellPrice).toFixed()).to.eq(
+				BigNumber(initialLandCost).toFixed()
+			)
+
+			await ico.putLandOnSale(landId, initialLandCost, false)
+			landsOnSale = await ico.getLandsOnSaleOrSold()
+			land = await ico.lands(landId)
+			expect(landsOnSale.length).to.eq(2)
+			expect(land.onSale).to.eq(false)
+		})
+		it("shouldn't allow you to put a land on sale without approving the ERC721 token first", async () => {
+			const landId = String(631272015026578401)
+			await winLandAuction(accounts[0])
+			try {
+				await ico.putLandOnSale(landId, initialLandCost, true)
+				expect.fail('You must approve the ERC721 land token first')
+			} catch (e) {
+				if (e.message == 'You must approve the ERC721 land token first') {
+					expect.fail('You must approve the ERC721 land token first')
+				}
+				expect(e.reason).to.eq(
+					'You must approve this contract to manage your ERC721 token'
+				)
+			}
+		})
+		it("shouldn't allow you to sell a land you don't own", async () => {
+			const landId = String(631272015026578401)
+			await winLandAuction(accounts[0])
+			try {
+				await ico.putLandOnSale(landId, initialLandCost, true, {
+					from: accounts[1],
+				})
+				expect.fail('You can only sell your own land')
+			} catch (e) {
+				if (e.message == 'You can only sell your own land') {
+					expect.fail('You can only sell your own land')
+				}
+				expect(e.reason).to.eq('You must be the land owner to put it on sale')
+			}
+		})
+		it("shouldn't allow you to sell a land before its auction is finished", async () => {
+			const landId = String(631272015026578401)
+			await participateInAuction(accounts[0], initialLandCost, landId)
+			// The auction is still not done so he shouldn't be able to put it on sale
+			try {
+				await ico.putLandOnSale(landId, initialLandCost, true)
+				expect.fail("You can't sell a land before the auction is finished")
+			} catch (e) {
+				if (
+					e.message == "You can't sell a land before the auction is finished"
+				) {
+					expect.fail("You can't sell a land before the auction is finished")
+				}
+				expect(e.reason).to.eq(
+					'The land auction must have been completed to put it on sale'
+				)
+			}
+		})
 	})
 
 	describe('buyLand', async () => {
-		it('should buy a land successfully')
-		it("shouldn't allow you to buy a land not on sale")
-		it(
-			"shouldn't allow you to buy a land with a snaller allowance than required"
-		)
-		it("shouldn't allow you to buy a land before ending its auction")
-		it('should send the right amount of OVR tokens to the seller')
-		it('should send the right OVR land token to the buyer')
+		it('should buy a land successfully', async () => {
+			const landId = String(631272015026578401)
+			await winLandAuction(accounts[0])
+			await ovrLand.approve(ico.address, landId)
+			await ico.putLandOnSale(landId, initialLandCost, true)
+
+			await ovrToken.approve(ico.address, initialLandCost, {
+				from: accounts[1],
+			})
+			await ico.buyLand(landId, { from: accounts[1] })
+		})
+		it('should send the right amount of OVR tokens to the seller', async () => {
+			const landId = String(631272015026578401)
+			await winLandAuction(accounts[0])
+			const initialTokenBalance = await ovrToken.balanceOf(accounts[0])
+			await ovrLand.approve(ico.address, landId)
+			await ico.putLandOnSale(landId, initialLandCost, true)
+
+			await ovrToken.approve(ico.address, initialLandCost, {
+				from: accounts[1],
+			})
+			await ico.buyLand(landId, { from: accounts[1] })
+
+			const finalTokenBalance = await ovrToken.balanceOf(accounts[0])
+			const initial = BigNumber(initialTokenBalance).plus(
+				BigNumber(initialLandCost)
+			)
+			expect(initial.toFixed()).to.eq(BigNumber(finalTokenBalance).toFixed())
+		})
+		it('should send the right OVR ERC721 land token to the buyer', async () => {
+			const landId = String(631272015026578401)
+			await winLandAuction(accounts[0])
+			await ovrLand.approve(ico.address, landId)
+			await ico.putLandOnSale(landId, initialLandCost, true)
+
+			await ovrToken.approve(ico.address, initialLandCost, {
+				from: accounts[1],
+			})
+			await ico.buyLand(landId, { from: accounts[1] })
+			const landOwner = await ovrLand.ownerOf(landId)
+
+			expect(landOwner).to.eq(accounts[1])
+		})
+		it("shouldn't allow you to buy a land not on sale", async () => {
+			const landId = String(631272015026578401)
+			await winLandAuction(accounts[0])
+			await ovrToken.approve(ico.address, initialLandCost)
+			try {
+				await ico.buyLand(landId)
+				expect.fail('The land is not on sale it should throw')
+			} catch (e) {
+				if (e.message == 'The land is not on sale it should throw') {
+					expect.fail('The land is not on sale it should throw')
+				}
+				expect(e.reason).to.eq('The land must be on sale to buy it')
+			}
+		})
+		it("shouldn't allow you to buy a land with a smaller allowance than required", async () => {
+			const landId = String(631272015026578401)
+			await winLandAuction(accounts[0])
+			await ovrLand.approve(ico.address, landId)
+			await ico.putLandOnSale(landId, initialLandCost, true)
+			await ovrToken.approve(
+				ico.address,
+				BigNumber(initialLandCost / 2).toFixed(),
+				{ from: accounts[1] }
+			)
+			try {
+				await ico.buyLand(landId, { from: accounts[1] })
+				expect.fail('The allowance is not enough it should fail')
+			} catch (e) {
+				if (e.message == 'The allowance is not enough it should fail') {
+					expect.fail('The allowance is not enough it should fail')
+				}
+				expect(e.reason).to.eq(
+					'You must approve the right amount of OVR tokens to buy this land'
+				)
+			}
+		})
 	})
 
 	describe('offerToBuyLand', async () => {
@@ -383,6 +564,15 @@ async function participateInAuction(sender, approvalAmount, _landId) {
 		BigNumber(approvalAmount).toFixed()
 	)
 	expect(String(land.state)).to.eq('1')
+}
+
+async function winLandAuction(sender, _landId) {
+	const landId = _landId ? _landId : String(631272015026578401)
+	await participateInAuction(sender, initialLandCost, landId)
+	await advanceTimeAndBlock(25 * 60 * 60) // 25 hours
+	await ico.redeemWonLand(landId, {
+		from: sender,
+	})
 }
 
 const advanceTimeAndBlock = async time => {
