@@ -1,7 +1,18 @@
+
+// Solidity -> now
+// 1590089133
+//
+// Javascript -> Date.now()
+// 1588015572226
+//
+// Javascript -> Math.trunc(Date.now() / 1000)
+// 1588015572
+
 const BigNumber = require('bignumber.js')
 const ICO = artifacts.require('ICO')
 const OVRToken = artifacts.require('OVRToken')
 const OVRLand = artifacts.require('OVRLand')
+const defaultAdvanceTime = 25 * 60 * 60
 let ovrToken = {}
 let ovrLand = {}
 let ico = {}
@@ -524,18 +535,7 @@ contract.only('ICO', accs => {
 	describe('offerToBuyLand', async () => {
 		it('should send an offer successfully', async () => {
 			const landId = String(631272015026578401)
-			const expiration = Date.now() + 10000000
-			await winLandAuction(accounts[0], landId)
-			await ovrToken.approve(ico.address, initialLandCost, {
-				from: accounts[1],
-			})
-			await ico.offerToBuyLand(landId, initialLandCost, expiration, {
-				from: accounts[1],
-			})
-			const offer = await ico.landOffers(0)
-			expect(offer.by).to.eq(accounts[1])
-			expect(BigNumber(offer.landId).toFixed()).to.eq(BigNumber(landId).toFixed())
-			expect(BigNumber(offer.price).toFixed()).to.eq(BigNumber(initialLandCost).toFixed())
+			await sendBuyOffer(landId)
 		})
 		it("shouldn't send an offer if the land is still in the auction state", async () => {
 			const landId = String(631272015026578401)
@@ -553,7 +553,9 @@ contract.only('ICO', accs => {
 				if (e.message == "Can't buy a land still in auction") {
 					expect.fail("Can't buy a land still in auction")
 				}
-				expect(e.reason).to.eq('The land auction must have been completed to send the offer to buy it')
+				expect(e.reason).to.eq(
+					'The land auction must have been completed to send the offer to buy it'
+				)
 			}
 		})
 		it("shouldn't send an offer without approving the right token amount", async () => {
@@ -569,7 +571,9 @@ contract.only('ICO', accs => {
 				if (e.message == "Can't buy a land without approving tokens") {
 					expect.fail("Can't buy a land without approving tokens")
 				}
-				expect(e.reason).to.eq('You must approve the right amount of OVR tokens to offer to buy it')
+				expect(e.reason).to.eq(
+					'You must approve the right amount of OVR tokens to offer to buy it'
+				)
 			}
 		})
 		it("shouldn't send an offer with a wrong expiration date", async () => {
@@ -606,28 +610,84 @@ contract.only('ICO', accs => {
 				if (e.message == "Can't buy a non-existing land") {
 					expect.fail("Can't buy a non-existing land")
 				}
-				expect(e.reason).to.eq('The land auction must have been completed to send the offer to buy it')
+				expect(e.reason).to.eq(
+					'The land auction must have been completed to send the offer to buy it'
+				)
 			}
 		})
 	})
 
 	describe('respondToBuyOffer', async () => {
-		it('should accept a buy offer successfully')
-		it('should reject a buy offer successfully')
-		it("shouldn't respond to a non-existing offer")
-		it("shouldn't respond to an expired offer")
-		it("shouldn't respond to an offer with an active auction")
-		it(
-			"shouldn't allow you to respond to an offer without being the land owner"
-		)
-	})
+		it('should accept a buy offer successfully', async () => {
+			const landId = String(631272015026578401)
+			await sendBuyOffer(landId)
+			const offerId = (await ico.getLandOffers(landId))[0]
+			await ovrLand.approve(ico.address, landId)
+			await ico.respondToBuyOffer(offerId, true)
+			const offer = await ico.landOffers(1)
+			expect(BigNumber(offer.state).toFixed()).to.eq('2') // Accepted
+		})
+		it('should reject a buy offer successfully', async () => {
+			const landId = String(631272015026578401)
+			await sendBuyOffer(landId)
+			const offerId = (await ico.getLandOffers(landId))[0]
+			await ico.respondToBuyOffer(offerId, false)
+			const offer = await ico.landOffers(1)
+			expect(BigNumber(offer.state).toFixed()).to.eq('3') // Declined
+		})
+		it("shouldn't respond to a non-existing offer", async () => {
+			const error = "Can't respond to a non-existing offer"
+			try {
+				await ico.respondToBuyOffer(123, false)
+				expect.fail(error)
+			} catch (e) {
+				if (e.message == error) {
+					expect.fail(error)
+				}
+				expect(e.reason).to.eq(
+					'The offer must be active to be able to respond to it'
+				)
+			}
+		})
+		it("shouldn't respond to an expired offer", async () => {
+			const landId = String(631272015026578401)
+			// Get the current timestamp from the blockchain + 1000s to give it time to send the buy offer
+			const expiration = (await advanceTimeAndBlock(defaultAdvanceTime)).timestamp + 10000000
+			const error = "Can't respond to an expired offer"
+			await sendBuyOffer(landId, expiration)
+			const offerId = (await ico.getLandOffers(landId))[0]
+			await ovrLand.approve(ico.address, landId)
 
-	describe('checkMyLandOffer', async () => {
-		it('should send you all the land offers for a given id')
-	})
+			await advanceTimeAndBlock(10000 * 60 * 60) // 10000 hours
+			try {
+				await ico.respondToBuyOffer(offerId, true)
+				expect.fail(error)
+			} catch (e) {
+				if (e.message == error) {
+					expect.fail(error)
+				}
+				expect(e.reason).to.eq('The offer is expired')
+			}
+		})
+		it("shouldn't allow you to respond to an offer without being the land owner", async () => {
+			const landId = String(631272015026578401)
+			const error = "Can't respond to an offer that's not yours"
+			await sendBuyOffer(landId)
+			const offerId = (await ico.getLandOffers(landId))[0]
+			await ovrLand.approve(ico.address, landId)
 
-	describe('checkWonLands', async () => {
-		it("should show you the land that you've won")
+			try {
+				await ico.respondToBuyOffer(offerId, true, {
+					from: accounts[2],
+				})
+				expect.fail(error)
+			} catch (e) {
+				if (e.message == error) {
+					expect.fail(error)
+				}
+				expect(e.reason).to.eq('You must be the owner to accept the land offer')
+			}
+		})
 	})
 })
 
@@ -651,10 +711,27 @@ async function participateInAuction(sender, approvalAmount, _landId) {
 async function winLandAuction(sender, _landId) {
 	const landId = _landId ? _landId : String(631272015026578401)
 	await participateInAuction(sender, initialLandCost, landId)
-	await advanceTimeAndBlock(25 * 60 * 60) // 25 hours
+	await advanceTimeAndBlock(defaultAdvanceTime) // 25 hours
 	await ico.redeemWonLand(landId, {
 		from: sender,
 	})
+}
+
+async function sendBuyOffer(landId, _expiration) {
+	const expiration = _expiration ? _expiration : Date.now() + 10000000
+	await winLandAuction(accounts[0], landId)
+	await ovrToken.approve(ico.address, initialLandCost, {
+		from: accounts[1],
+	})
+	await ico.offerToBuyLand(landId, initialLandCost, expiration, {
+		from: accounts[1],
+	})
+	const offer = await ico.landOffers(1)
+	expect(offer.by).to.eq(accounts[1])
+	expect(BigNumber(offer.landId).toFixed()).to.eq(BigNumber(landId).toFixed())
+	expect(BigNumber(offer.price).toFixed()).to.eq(
+		BigNumber(initialLandCost).toFixed()
+	)
 }
 
 const advanceTimeAndBlock = async time => {

@@ -303,12 +303,12 @@ contract ICO is Ownable, Pausable, IERC721Receiver {
         require(allowance >= _price, 'You must approve the right amount of OVR tokens to offer to buy it');
         require(_expirationDate > now, 'The expiration date must be larger than now');
 
+        lastLandOfferId++;
         LandOffer memory newOffer = LandOffer(lastLandOfferId, msg.sender, _landId, _price, now, _expirationDate, LandOfferState.ACTIVE);
         landOffers[lastLandOfferId] = newOffer;
         landOfferIds[_landId].push(lastLandOfferId);
 
         emit LandOfferCreated(lastLandOfferId, msg.sender, _landId, _price, now, _expirationDate);
-        lastLandOfferId++;
     }
 
     /// To respond to a buy land offer independently on whether your land is on sale or not
@@ -318,16 +318,18 @@ contract ICO is Ownable, Pausable, IERC721Receiver {
         Land storage land = lands[landOffer.landId];
         require(landOffer.state == LandOfferState.ACTIVE, 'The offer must be active to be able to respond to it');
         require(landOffer.expirationDate > now, 'The offer is expired');
-        require(land.state == AuctionState.ENDED, 'The auction state must be ended to accept the offer');
         require(land.owner == msg.sender, 'You must be the owner to accept the land offer');
+
         if (_accept) {
+            address approved = IERC721(ovrLand).getApproved(land.landToBuy);
+            require(approved == address(this), 'You must approve this contract to manage your ERC721 token');
             emit LandSold(land.landToBuy, land.owner, landOffer.by, landOffer.price, now);
+            IERC20(ovrToken).transferFrom(landOffer.by, land.owner, landOffer.price);
+            IERC721(ovrLand).safeTransferFrom(land.owner, landOffer.by, land.landToBuy);
             landOffer.state = LandOfferState.ACCEPTED;
             land.owner = landOffer.by;
             land.onSale = false;
             land.sellPrice = 0;
-            IERC20(ovrToken).transferFrom(landOffer.by, land.owner, landOffer.price);
-            IERC721(ovrLand).safeTransferFrom(land.owner, msg.sender, land.landToBuy);
         } else {
             landOffer.state = LandOfferState.DECLINED;
             emit LandOfferDeclined(_landOfferId, land.landToBuy);
@@ -407,6 +409,10 @@ contract ICO is Ownable, Pausable, IERC721Receiver {
 
     function getLandsOnSaleOrSold() public view returns(uint256[] memory) {
         return landsOnSaleOrSold;
+    }
+
+    function getLandOffers(uint256 _landId) public view returns(uint256[] memory) {
+        return landOfferIds[_landId];
     }
 
     function onERC721Received(address operator, address from, uint256 tokenId, bytes memory data) public returns (bytes4) {

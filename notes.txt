@@ -21,6 +21,18 @@ Information:
 So we check the last 4 digits for the epochs
 
 
+Dates
+---
+Solidity -> now
+1590089133
+
+Javascript -> Date.now()
+1588015572226
+
+Javascript -> Math.trunc(Date.now() / 1000)
+1588015572
+
+
 Testing
 ---
 
