@@ -1,4 +1,3 @@
-
 // Solidity -> now
 // 1590089133
 //
@@ -652,7 +651,8 @@ contract.only('ICO', accs => {
 		it("shouldn't respond to an expired offer", async () => {
 			const landId = String(631272015026578401)
 			// Get the current timestamp from the blockchain + 1000s to give it time to send the buy offer
-			const expiration = (await advanceTimeAndBlock(defaultAdvanceTime)).timestamp + 10000000
+			const expiration =
+				(await advanceTimeAndBlock(defaultAdvanceTime)).timestamp + 10000000
 			const error = "Can't respond to an expired offer"
 			await sendBuyOffer(landId, expiration)
 			const offerId = (await ico.getLandOffers(landId))[0]
