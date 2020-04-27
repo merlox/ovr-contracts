@@ -521,8 +521,15 @@ contract.only('ICO', accs => {
 		})
 	})
 
-	describe('offerToBuyLand', async () => {
-		it('should send an offer successfully')
+	describe.only('offerToBuyLand', async () => {
+		it('should send an offer successfully', async () => {
+			const landId = String(631272015026578401)
+			const expiration = Date.now() + 10000000
+			await winLandAuction(accounts[0], landId)
+			await ico.offerToBuyLand(landId, initialLandCost, expiration, {
+				from: accounts[1],
+			})
+		})
 		it("shouldn't send an offer if the land is still in the auction state")
 		it("shouldn't send an offer without approving the right token amoun")
 		it("shouldn't send an offer with a wrong expiration date")
