@@ -521,19 +521,94 @@ contract.only('ICO', accs => {
 		})
 	})
 
-	describe.only('offerToBuyLand', async () => {
+	describe('offerToBuyLand', async () => {
 		it('should send an offer successfully', async () => {
 			const landId = String(631272015026578401)
 			const expiration = Date.now() + 10000000
 			await winLandAuction(accounts[0], landId)
+			await ovrToken.approve(ico.address, initialLandCost, {
+				from: accounts[1],
+			})
 			await ico.offerToBuyLand(landId, initialLandCost, expiration, {
 				from: accounts[1],
 			})
+			const offer = await ico.landOffers(0)
+			expect(offer.by).to.eq(accounts[1])
+			expect(BigNumber(offer.landId).toFixed()).to.eq(BigNumber(landId).toFixed())
+			expect(BigNumber(offer.price).toFixed()).to.eq(BigNumber(initialLandCost).toFixed())
 		})
-		it("shouldn't send an offer if the land is still in the auction state")
-		it("shouldn't send an offer without approving the right token amoun")
-		it("shouldn't send an offer with a wrong expiration date")
-		it("shouldn't send an offer to a non-existing land")
+		it("shouldn't send an offer if the land is still in the auction state", async () => {
+			const landId = String(631272015026578401)
+			const expiration = Date.now() + 10000000
+			await participateInAuction(accounts[0], initialLandCost, landId)
+			await ovrToken.approve(ico.address, initialLandCost, {
+				from: accounts[1],
+			})
+			try {
+				await ico.offerToBuyLand(landId, initialLandCost, expiration, {
+					from: accounts[1],
+				})
+				expect.fail("Can't buy a land still in auction")
+			} catch (e) {
+				if (e.message == "Can't buy a land still in auction") {
+					expect.fail("Can't buy a land still in auction")
+				}
+				expect(e.reason).to.eq('The land auction must have been completed to send the offer to buy it')
+			}
+		})
+		it("shouldn't send an offer without approving the right token amount", async () => {
+			const landId = String(631272015026578401)
+			const expiration = Date.now() + 10000000
+			await winLandAuction(accounts[0], landId)
+			try {
+				await ico.offerToBuyLand(landId, initialLandCost, expiration, {
+					from: accounts[1],
+				})
+				expect.fail("Can't buy a land without approving tokens")
+			} catch (e) {
+				if (e.message == "Can't buy a land without approving tokens") {
+					expect.fail("Can't buy a land without approving tokens")
+				}
+				expect(e.reason).to.eq('You must approve the right amount of OVR tokens to offer to buy it')
+			}
+		})
+		it("shouldn't send an offer with a wrong expiration date", async () => {
+			const landId = String(631272015026578401)
+			const expiration = 123
+			await winLandAuction(accounts[0], landId)
+			await ovrToken.approve(ico.address, initialLandCost, {
+				from: accounts[1],
+			})
+			try {
+				await ico.offerToBuyLand(landId, initialLandCost, expiration, {
+					from: accounts[1],
+				})
+				expect.fail("Can't buy a land without a proper expiration date")
+			} catch (e) {
+				if (e.message == "Can't buy a land without a proper expiration dates") {
+					expect.fail("Can't buy a land without a proper expiration date")
+				}
+				expect(e.reason).to.eq('The expiration date must be larger than now')
+			}
+		})
+		it("shouldn't send an offer to a non-existing land", async () => {
+			const landId = String(631272015026578401)
+			const expiration = Date.now() + 10000000
+			await ovrToken.approve(ico.address, initialLandCost, {
+				from: accounts[1],
+			})
+			try {
+				await ico.offerToBuyLand(landId, initialLandCost, expiration, {
+					from: accounts[1],
+				})
+				expect.fail("Can't buy a non-existing land")
+			} catch (e) {
+				if (e.message == "Can't buy a non-existing land") {
+					expect.fail("Can't buy a non-existing land")
+				}
+				expect(e.reason).to.eq('The land auction must have been completed to send the offer to buy it')
+			}
+		})
 	})
 
 	describe('respondToBuyOffer', async () => {
