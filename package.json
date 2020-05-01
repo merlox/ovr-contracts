@@ -1,7 +1,7 @@
 {
   "name": "ovr-contracts",
   "version": "1.0.0",
-  "description": "",
+  "description": "The ovr contracts and functionality",
   "main": "truffle-config.js",
   "directories": {
     "test": "test"
@@ -25,5 +25,6 @@
     "@openzeppelin/contracts": "^2.5.0",
     "@truffle/hdwallet-provider": "^1.0.34",
     "bignumber.js": "^9.0.0"
-  }
+  },
+  "devDependencies": {}
 }
