@@ -153,6 +153,15 @@ contract('TokenBuy', accs => {
         const finalEthBalance = await web3.eth.getBalance(accounts[0])
         assert.ok(finalEthBalance > midEthBalance, 'You must have extracted ETH coins')
     })
+
+    it('should send the tokens correctly to those that buy with credit card', async () => {
+        const amount = new web3.utils.BN(web3.utils.toWei('300'))
+        const initialBalance = await ovrToken.balanceOf(accounts[1])
+        await tokenBuy.sendTokensCreditCard(accounts[1], amount)
+        const finalBalance = await ovrToken.balanceOf(accounts[1])
+        const check = amount.add(initialBalance)
+        assert.ok(check.eq(finalBalance), 'The balance has not been updated properly')
+    })
 })
 
 

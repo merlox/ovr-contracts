@@ -139,6 +139,11 @@ contract TokenBuy is Ownable, Pausable {
         owner.transfer(address(this).balance);
     }
 
+    /// Transfer tokens to those that buy with credit card
+    function sendTokensCreditCard(address _to, uint256 _amount) public onlyOwner whenNotPaused {
+        IERC20(ovrToken).transfer(_to, _amount);
+    }
+
     /// Check how much ETH you have to send to receive X amount of tokens
     function calculateHowManyTokensYouCanBuyWithEth(uint256 _tokensToBuy) public view returns(uint256) {
         return _tokensToBuy.div(tokensPerEth);

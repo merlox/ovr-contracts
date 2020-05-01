@@ -19,7 +19,7 @@ let accounts = {} // Global accounts
 let initialLandCost
 let initialTokens
 
-contract.only('ICO', accs => {
+contract('ICO', accs => {
 	accounts = accs
 	initialLandCost = BigNumber(10e18)
 	initialTokens = BigNumber(1000e18) // 1k tokens for each account
