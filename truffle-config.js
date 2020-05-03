@@ -18,7 +18,7 @@
  *
  */
 const HDWalletProvider = require('@truffle/hdwallet-provider')
-const mnemonic = 'senior joke believe giant jacket much oblige radar fade devote alone device'
+const mnemonic = 'shell ginger put enrich either stick confirm invite code snake potato inch'
 const infuraKey = '87ac5f84d691494588f2162b15d1523d'
 
 module.exports = {
