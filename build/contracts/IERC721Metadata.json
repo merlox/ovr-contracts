@@ -52637,7 +52637,7 @@
   },
   "networks": {},
   "schemaVersion": "3.1.0",
-  "updatedAt": "2020-05-03T18:51:45.308Z",
+  "updatedAt": "2020-05-09T14:28:12.312Z",
   "devdoc": {
     "methods": {
       "balanceOf(address)": {

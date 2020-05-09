@@ -52669,7 +52669,7 @@
   },
   "networks": {},
   "schemaVersion": "3.1.0",
-  "updatedAt": "2020-05-03T18:51:45.203Z",
+  "updatedAt": "2020-05-09T14:28:12.243Z",
   "devdoc": {
     "methods": {
       "approve(address,uint256)": {

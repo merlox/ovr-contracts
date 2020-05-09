@@ -52586,7 +52586,7 @@
   },
   "networks": {},
   "schemaVersion": "3.1.0",
-  "updatedAt": "2020-05-03T18:51:44.940Z",
+  "updatedAt": "2020-05-09T14:28:12.026Z",
   "devdoc": {
     "methods": {
       "balanceOf(address)": {
