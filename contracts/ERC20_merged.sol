@@ -1,13 +1,6 @@
-/**
- *Submitted for verification at Etherscan.io on 2020-03-10
-*/
-
 pragma solidity ^0.5.0;
 
-// ----------------------------------------------------------------------------
-// ERC Token Standard #20 Interface
-//
-// ----------------------------------------------------------------------------
+
 contract ERC20Interface {
     function totalSupply() public view returns (uint);
     function balanceOf(address tokenOwner) public view returns (uint balance);
@@ -20,9 +13,6 @@ contract ERC20Interface {
     event Approval(address indexed tokenOwner, address indexed spender, uint tokens);
 }
 
-// ----------------------------------------------------------------------------
-// Safe Math Library 
-// ----------------------------------------------------------------------------
 contract SafeMath {
     function safeAdd(uint a, uint b) public pure returns (uint c) {
         c = a + b;
@@ -34,27 +24,22 @@ contract SafeMath {
     }
 }
 
-// Just for testing purposes
 contract ERC20 is ERC20Interface, SafeMath {
     string public name;
     string public symbol;
-    uint8 public decimals; // 18 decimals is the strongly suggested default, avoid changing it
+    uint8 public decimals; 
     
     uint256 public _totalSupply;
     
     mapping(address => uint) balances;
     mapping(address => mapping(address => uint)) allowed;
     
-    /**
-     * Constrctor function
-     *
-     * Initializes contract with initial supply tokens to the creator of the contract
-     */
+    
     constructor() public {
         name = "Token";
         symbol = "TOK";
         decimals = 18;
-        _totalSupply = 100e24;
+        _totalSupply = 100e18;
         
         balances[msg.sender] = _totalSupply;
         emit Transfer(address(0), msg.sender, _totalSupply);

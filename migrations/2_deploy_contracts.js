@@ -5,7 +5,8 @@ const ERC20 = artifacts.require('ERC20')
 const ICO = artifacts.require('ICO')
 let ovrToken
 let ovrLand
-let stablecoins = []
+let tokenBuy
+let deployed = []
 /// Real token addresses
 /// daiToken = 0x6B175474E89094C44Da98b954EedeAC495271d0F;
 /// usdcToken = 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48;
@@ -15,46 +16,55 @@ module.exports = async (deployer, network) => {
 		deployer
 			.deploy(ERC20)
 			.then(token => {
-				console.log('DAI', token.address)
-				stablecoins.push(token.address)
+				deployed.push(token.address)
 				return deployer.deploy(ERC20)
 			})
 			.then(token => {
-				console.log('Tether', token.address)
-				stablecoins.push(token.address)
+				deployed.push(token.address)
 				return deployer.deploy(ERC20)
 			})
 			.then(token => {
-				console.log('Usdc', token.address)
-				stablecoins.push(token.address)
+				deployed.push(token.address)
 				return deployer.deploy(OVRLand)
             })
             .then(_ovrLand => {
-                console.log('Ovr land', _ovrLand.address)
-                ovrLand = _ovrLand.address
+				deployed.push(_ovrLand.address)
+                ovrLand = _ovrLand
 				return deployer.deploy(OVRToken)
 			})
-			.then(_ovrToken => {
-				console.log('Ovr ERC20', _ovrToken.address)
-				ovrToken = _ovrToken.address
+			.then(async _ovrToken => {
+				ovrToken = _ovrToken
+				deployed.push(_ovrToken.address)
+				ovrToken = _ovrToken
 				return deployer.deploy(
                     TokenBuy,
-					ovrToken,
-					stablecoins[0],
-					stablecoins[1],
-					stablecoins[2],
+					ovrToken.address,
+					deployed[0],
+					deployed[1],
+					deployed[2],
 				)
 			})
-			.then(tokenBuy => {
-                console.log('TokenBuy', tokenBuy.address)
+			.then(_tokenBuy => {
+				tokenBuy = _tokenBuy
+				deployed.push(tokenBuy.address)
 				return deployer.deploy(
                     ICO,
-                    ovrToken,
-                    ovrLand,
+                    ovrToken.address,
+                    ovrLand.address,
                     String(10e18), // 10 ovr as the initial land bid
                 )
-			}).then(ico => {
-				console.log('ICO', ico)
+			}).then(async ico => {
+				const accounts = await web3.eth.getAccounts()
+				const amount = await ovrToken.balanceOf(accounts[0])
+				await ovrToken.transfer(tokenBuy.address, amount)
+				await tokenBuy.setTokenPrices(100, 10)
+				console.log('DAI', deployed[0])
+				console.log('Usdc', deployed[1])
+				console.log('Tether', deployed[2])
+				console.log('Ovr ERC721', deployed[3])
+				console.log('Ovr ERC20', deployed[4])
+				console.log('TokenBuy', deployed[5])
+				console.log('ICO', ico.address)
 			})
 	} else {
 		deployer
