@@ -107,8 +107,6 @@ contract ICO is Ownable, Pausable, IERC721Receiver {
     uint256 public contractCreationDate;
     // LandID => Land
     mapping (uint256 => Land) public lands;
-    // User => OVR tokens locked in active actions inside this contract
-    mapping (address => uint256) public userTokensInActiveAuctions;
     // User => a list of owned land ids
     mapping (address => uint256[]) public ownedLands;
     // User => how many tokens he can cashback with redeemCashback()
@@ -156,7 +154,6 @@ contract ICO is Ownable, Pausable, IERC721Receiver {
             address oldBidder = landToBuy.owner;
             uint256 oldBid = landToBuy.paid;
             require(allowance >= nextBid, 'Your allowance must equal or exceed the cost of participating in this auction');
-            userTokensInActiveAuctions[oldBidder] = userTokensInActiveAuctions[oldBidder].sub(oldBid);
             // Transfer new bidder's tokens
             IERC20(ovrToken).transferFrom(msg.sender, address(this), nextBid);
             // Return previous bidder's tokens
@@ -174,7 +171,6 @@ contract ICO is Ownable, Pausable, IERC721Receiver {
             require(allowance >= initialLandBid, 'Your allowance must equal or exceed the cost of participating in this auction');
             lands[_landId] = Land(msg.sender, _landId, initialLandBid, now, AuctionState.ACTIVE, 0, false, 0, false, false, now);
             IERC20(ovrToken).transferFrom(msg.sender, address(this), initialLandBid);
-            userTokensInActiveAuctions[msg.sender] = initialLandBid;
             activeLands.push(_landId);
             emit AuctionStarted(msg.sender, _landId, initialLandBid, now);
         } else {
