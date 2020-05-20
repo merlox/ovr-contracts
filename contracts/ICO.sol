@@ -117,6 +117,7 @@ contract ICO is Ownable, Pausable, IERC721Receiver {
     mapping (uint256 => LandOffer) public landOffers;
     // Lands that have initiated the auction process can be either active or ended
     uint256[] public activeLands;
+    uint256 public auctionLandDuration = 24 hours; // Default 24 hours
 
     // Lands that are on sale or have been sold previously 
     // This array is immutable meaning it won't delete already existing ids
@@ -135,7 +136,12 @@ contract ICO is Ownable, Pausable, IERC721Receiver {
         contractCreationDate = now;
     }
 
-    /// TODO test that the auctions[] is actually being updated
+    /// Sets the duration of each land auction
+    function setAuctionLandDuration(uint256 _time) public onlyOwner {
+        require(_time > 0, "The auction duration can't be zero");
+        auctionLandDuration = _time;
+    }
+
     /// To participate in a new or existing auction
     /// The user must first approve the right amount of OVR tokens to execute this
     /// False when the auction has ended and True when you've participated successfully
@@ -146,7 +152,7 @@ contract ICO is Ownable, Pausable, IERC721Receiver {
         uint256 allowance = IERC20(ovrToken).allowance(msg.sender, address(this));
 
         if (landToBuy.state == AuctionState.ACTIVE) {
-            require(now.sub(landToBuy.lastBidTimestamp) < 24 hours, 'This land auction has ended');
+            require(now.sub(landToBuy.lastBidTimestamp) < auctionLandDuration, 'This land auction has ended');
 
             // The auction for this land ID has been started
             // The next bidder must pay double the last price
@@ -181,7 +187,7 @@ contract ICO is Ownable, Pausable, IERC721Receiver {
     /// To redeem the land that you won in an auction
     function redeemWonLand(uint256 _landId) public whenNotPaused {
         Land storage land = lands[_landId];
-        if (now.sub(land.lastBidTimestamp) >= 24 hours) {
+        if (now.sub(land.lastBidTimestamp) >= auctionLandDuration) {
             land.state = AuctionState.ENDED;
         }
         require(land.state == AuctionState.ENDED, "You can't redeem this land until its auction is finished");
