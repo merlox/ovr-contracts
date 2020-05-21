@@ -58,7 +58,7 @@ contract ICO is Ownable, Pausable, IERC721Receiver {
     // Default state is NOT_STARTED
     enum AuctionState { NOT_STARTED, ACTIVE, ENDED }
 
-    enum LandOfferState { NOT_STARTED, ACTIVE, ACCEPTED, DECLINED, EXPIRED }
+    enum LandOfferState { NOT_STARTED, ACTIVE, ACCEPTED, DECLINED, EXPIRED, CANCELLED }
 
     struct Land {
         address owner;
@@ -95,6 +95,7 @@ contract ICO is Ownable, Pausable, IERC721Receiver {
     event LandOfferCreated(uint256 indexed id, address indexed by, uint256 indexed landId, uint256 price, uint256 timestamp, uint256 expirationDate);
     event LandSold(uint256 indexed landId, address indexed oldOwner, address indexed buyer, uint256 price, uint256 timestamp);
     event LandOfferDeclined(uint256 indexed landOfferId, uint256 indexed landId);
+    event LandOfferCancelled(uint256 indexed offerId);
 
     address public ovrToken;
     address public ovrLand;
@@ -311,6 +312,15 @@ contract ICO is Ownable, Pausable, IERC721Receiver {
         landOfferIds[_landId].push(lastLandOfferId);
 
         emit LandOfferCreated(lastLandOfferId, msg.sender, _landId, _price, now, _expirationDate);
+    }
+
+    /// To cancel buy offers
+    function cancelBuyOffer(uint256 _offerId) public whenNotPaused {
+        LandOffer storage offer = landOffers[_offerId];
+        require(msg.sender == offer.by, 'You must be the owner to cancel the buy offer');
+        offer.state = LandOfferState.CANCELLED;
+        
+        emit LandOfferCancelled(_offerId);
     }
 
     /// To respond to a buy land offer independently on whether your land is on sale or not
