@@ -78,6 +78,7 @@ contract ICO is Ownable, Pausable, IERC721Receiver {
     struct LandOffer {
         uint256 id; // The unique land offer identifier
         address by;
+        uint256 group; // Unique counter for group orders to desactive those after 1 has been approved
         uint256 landId;
         uint256 price;
         uint256 timestamp;
@@ -116,6 +117,8 @@ contract ICO is Ownable, Pausable, IERC721Receiver {
     mapping (uint256 => uint256[]) public landOfferIds;
     // LandOfferId => LandOffer
     mapping (uint256 => LandOffer) public landOffers;
+    // LandID => groupCounter
+    mapping (uint256 => uint256) public groupCounters;
     // Lands that have initiated the auction process can be either active or ended
     uint256[] public activeLands;
     uint256 public auctionLandDuration = 24 hours; // Default 24 hours
@@ -307,7 +310,7 @@ contract ICO is Ownable, Pausable, IERC721Receiver {
         require(_expirationDate > now, 'The expiration date must be larger than now');
 
         lastLandOfferId++;
-        LandOffer memory newOffer = LandOffer(lastLandOfferId, msg.sender, _landId, _price, now, _expirationDate, LandOfferState.ACTIVE);
+        LandOffer memory newOffer = LandOffer(lastLandOfferId, msg.sender, groupCounters[_landId], _landId, _price, now, _expirationDate, LandOfferState.ACTIVE);
         landOffers[lastLandOfferId] = newOffer;
         landOfferIds[_landId].push(lastLandOfferId);
 
@@ -342,6 +345,7 @@ contract ICO is Ownable, Pausable, IERC721Receiver {
             land.owner = landOffer.by;
             land.onSale = false;
             land.sellPrice = 0;
+            groupCounters[landOffer.landId]++;
         } else {
             landOffer.state = LandOfferState.DECLINED;
             emit LandOfferDeclined(_landOfferId, land.landToBuy);
