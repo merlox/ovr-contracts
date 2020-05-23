@@ -346,6 +346,7 @@ contract ICO is Ownable, Pausable, IERC721Receiver {
             land.onSale = false;
             land.sellPrice = 0;
             groupCounters[landOffer.landId]++;
+            landOffer.group = groupCounters[landOffer.landId];
         } else {
             landOffer.state = LandOfferState.DECLINED;
             emit LandOfferDeclined(_landOfferId, land.landToBuy);
