@@ -101,7 +101,7 @@ module.exports = async (deployer, network) => {
 				const accounts = await web3.eth.getAccounts()
 				const amount = await ovrToken.balanceOf(accounts[0])
 				await ovrToken.transfer(tokenBuy.address, amount)
-				await tokenBuy.setTokenPrices(100, 10)
+				await tokenBuy.setTokenPrices(perETH, perUSD)
 				await ovrLand.addMinter(ico.address) // Make the ICO contract a ERC721 minter
 				console.log('DAI', deployed[0])
 				console.log('Usdc', deployed[1])
