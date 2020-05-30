@@ -149,8 +149,9 @@ contract ICO is Ownable, Pausable, IERC721Receiver {
     /// To participate in a new or existing auction
     /// The user must first approve the right amount of OVR tokens to execute this
     /// False when the auction has ended and True when you've participated successfully
-    function participateInAuction(uint256 _landId) public whenNotPaused {
+    function participateInAuction(uint256 _bid, uint256 _landId) public whenNotPaused {
         require(checkEpoch(_landId), "This land isn't available at the current epoch");
+        require(_bid > 0, "The bid can't be zero");
 
         Land storage landToBuy = lands[_landId];
         uint256 allowance = IERC20(ovrToken).allowance(msg.sender, address(this));
@@ -163,16 +164,17 @@ contract ICO is Ownable, Pausable, IERC721Receiver {
             uint256 nextBid = landToBuy.paid.mul(2);
             address oldBidder = landToBuy.owner;
             uint256 oldBid = landToBuy.paid;
-            require(allowance >= nextBid, 'Your allowance must equal or exceed the cost of participating in this auction');
+            require(_bid >= nextBid, 'Your bid must be equal or larger than double the previous one');
+            require(allowance >= _bid, 'Your allowance must equal or exceed the cost of participating in this auction');
             // Transfer new bidder's tokens
-            IERC20(ovrToken).transferFrom(msg.sender, address(this), nextBid);
+            IERC20(ovrToken).transferFrom(msg.sender, address(this), _bid);
             // Return previous bidder's tokens
             IERC20(ovrToken).transfer(oldBidder, oldBid);
             landToBuy.owner = msg.sender;
-            landToBuy.paid = nextBid;
+            landToBuy.paid = _bid;
             landToBuy.lastBidTimestamp = now;
             extractableTokens = extractableTokens.add(oldBid);
-            emit AuctionBid(msg.sender, oldBidder, _landId, nextBid, now);
+            emit AuctionBid(msg.sender, oldBidder, _landId, _bid, now);
         } else if (landToBuy.state == AuctionState.NOT_STARTED) {
             // This is a new auction
             // Check the tokens locked in active auctions because it may happen that he has 
