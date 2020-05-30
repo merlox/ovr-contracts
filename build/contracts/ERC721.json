@@ -52592,7 +52592,7 @@
   },
   "networks": {},
   "schemaVersion": "3.1.0",
-  "updatedAt": "2020-05-30T13:10:44.329Z",
+  "updatedAt": "2020-05-30T14:39:39.557Z",
   "devdoc": {
     "methods": {
       "approve(address,uint256)": {
