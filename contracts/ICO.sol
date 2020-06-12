@@ -5,6 +5,7 @@ import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import '@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol';
 import '@openzeppelin/contracts/lifecycle/Pausable.sol';
 import '@openzeppelin/contracts/introspection/IERC165.sol';
+// import './TokenBuyInterface.sol';
 
 /**
  * @dev Required interface of an ERC721 compliant contract.
@@ -100,6 +101,7 @@ contract ICO is Ownable, Pausable, IERC721Receiver {
 
     address public ovrToken;
     address public ovrLand;
+    // address public tokenBuy;
     uint256 public initialLandBid;
     uint256 public lastLandOfferId; // A counter for setting up ids
     // The tokens that can be extracted by the owner after auctions have been won, 
@@ -145,6 +147,24 @@ contract ICO is Ownable, Pausable, IERC721Receiver {
         require(_time > 0, "The auction duration can't be zero");
         auctionLandDuration = _time;
     }
+    
+    /// To participate with DAI, USDT, USDC or Dollars
+    // 0 -> eth
+    // 1 -> Dai
+    // 2 -> Usdt
+    // 3 -> Usdc
+    // function participateWithTokens(uint256 _type, uint256 _bid, uint256 _landId) public payable whenNotPaused {
+    //     if (_type == 0) {
+    //         TokenBuyInterface(tokenBuy).buyTokensWithEth();
+    //     } else if (_type == 1) {
+    //         TokenBuyInterface(tokenBuy).buyTokensWithDai(_bid);
+    //     } else if (_type == 2) {
+    //         TokenBuyInterface(tokenBuy).buyTokensWithUsdt(_bid);
+    //     } else if (_type == 3) {
+    //         TokenBuyInterface(tokenBuy).buyTokensWithUsdc(_bid);
+    //     }   
+    //     participateInAuction(_bid, _landId);
+    // }
 
     /// To participate in a new or existing auction
     /// The user must first approve the right amount of OVR tokens to execute this
@@ -231,6 +251,12 @@ contract ICO is Ownable, Pausable, IERC721Receiver {
         ownedLands[msg.sender].push(_landId);
 
         emit WonLand(msg.sender, _landId, land.paid);
+    }
+
+    function redeemBulkLands(uint256[] memory _landIds) public whenNotPaused {
+        for (uint256 i = 0; i < _landIds.length; i++) {
+            redeemWonLand(_landIds[i]);
+        }
     }
 
     /// To get your cashback for the buyers in the initial 9 months

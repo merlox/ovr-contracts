@@ -100,9 +100,14 @@ module.exports = async (deployer, network) => {
 			.then(async ico => {
 				const accounts = await web3.eth.getAccounts()
 				const amount = await ovrToken.balanceOf(accounts[0])
+				console.log('Transfering over tokens to the TokenBuy contract...')
 				await ovrToken.transfer(tokenBuy.address, amount)
+				console.log('Setting token prices in TokenBuy...')
 				await tokenBuy.setTokenPrices(perETH, perUSD)
+				console.log('Setting the ICO contract as the miner...')
 				await ovrLand.addMinter(ico.address) // Make the ICO contract a ERC721 minter
+				console.log('Setting auction duration to 10 minutes...')
+				await ico.setAuctionLandDuration(600)
 				console.log('DAI', deployed[0])
 				console.log('Usdc', deployed[1])
 				console.log('Tether', deployed[2])
