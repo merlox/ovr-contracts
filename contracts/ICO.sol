@@ -469,26 +469,33 @@ contract ICOParticipate is Pausable {
         tokensPerEth = TokenBuyInterface(tokenBuy).tokensPerEth();
     }
 
+    // _token 0 = ETH, 1 = dai, 2 = tether, 3 = usdc, 4 = OVR
     function participate (uint256 _token, uint256 _bid, uint256 _landId) public payable whenNotPaused {
+        updateTokenBuyValues();
+        if (msg.value > 0) {
+            _bid = _bid.mul(tokensPerEth);
+        }
+
         require(ico.checkEpoch(_landId), "This land isn't available at the current epoch");
         require(_bid > 0 || msg.value > 0, "The bid can't be zero");
         (,,, uint256 lastBidTimestamp, ICO.AuctionState state,,,,,,,) = ico.lands(_landId);
-        require(now.sub(lastBidTimestamp) < ico.auctionLandDuration(), 'This land auction has ended');
 
-        updateTokenBuyValues();
-
-        if (state == ICO.AuctionState.ACTIVE) {
+        // If it started or ended
+        if (state == ICO.AuctionState.ENDED) {
+            revert('The auction has ended for this land');
+        } else if (state == ICO.AuctionState.ACTIVE) {
+            require(now.sub(lastBidTimestamp) < ico.auctionLandDuration(), 'This land auction has ended');
             participateActiveAuction(_token, _bid, _landId);
         } else if (state == ICO.AuctionState.NOT_STARTED) {
+            require(_bid >= ico.initialLandBid(), 'The bid must be larger or equal the initial minimum');
             participateNewAuction(_token, _bid, _landId);
         } else {
             revert('The auction has ended for this land');
         }
     }
 
-    function participateActiveAuction (uint256 _token, uint256 _bid, uint256 _landId) public payable whenNotPaused {
+    function participateActiveAuction (uint256 _token, uint256 _bid, uint256 _landId) internal whenNotPaused {
         (address payable oldBidder,, uint256 oldBid,, ICO.AuctionState state,,,,,,, uint256 paidWith) = ico.lands(_landId);
-
         require(_bid >= oldBid.mul(2), 'Your bid must be equal or larger than double the previous one');
 
         // Return previous bidder's tokens
@@ -508,9 +515,7 @@ contract ICOParticipate is Pausable {
         emit AuctionBid(msg.sender, oldBidder, _landId, _bid, now);
     }
 
-    function participateNewAuction (uint256 _token, uint256 _bid, uint256 _landId) public payable whenNotPaused {
-        require(_bid >= ico.initialLandBid(), 'The bid must be larger or equal the initial minimum');
-
+    function participateNewAuction (uint256 _token, uint256 _bid, uint256 _landId) internal whenNotPaused {
         ico.setLands(msg.sender, _landId, _bid, ICO.AuctionState.ACTIVE, _token);
         if (_token == 1) {
             dai.transferFrom(msg.sender, address(this), _bid.div(tokensPerUsd));

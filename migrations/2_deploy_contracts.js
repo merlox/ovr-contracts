@@ -132,14 +132,14 @@ module.exports = async (deployer, network) => {
 				console.log('Setting up approved in the ICO contract...')
 				await ico.setApproved(_icoParticipate.address)
 				
-				console.log('DAI', deployed[0])
-				console.log('Usdc', deployed[1])
-				console.log('Tether', deployed[2])
-				console.log('Ovr ERC721', deployed[3])
-				console.log('Ovr ERC20', deployed[4])
-				console.log('TokenBuy', deployed[5])
-				console.log('ICO', ico.address)
-				console.log('ICO Participate', _icoParticipate.address)
+				console.log(`export const daiAddress = '${deployed[0]}';`)
+				console.log(`export const usdcAddress = '${deployed[1]}';`)
+				console.log(`export const tetherAddress = '${deployed[2]}';`)
+				console.log(`export const ovr721Address = '${deployed[3]}';`)
+				console.log(`export const ovrAddress = '${deployed[4]}';`)
+				console.log(`export const tokenBuyAddress = '${deployed[5]}';`)
+				console.log(`export const icoAddress = '${ico.address}';`)
+				console.log(`export const icoParticipateAddress = '${_icoParticipate.address}';`)
 			})
 	}
 }
