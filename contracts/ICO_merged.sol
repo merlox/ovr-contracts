@@ -1,15 +1,249 @@
 pragma solidity ^0.5.0;
 
-import '@openzeppelin/contracts/math/SafeMath.sol';
-import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
-import '@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol';
-import '@openzeppelin/contracts/lifecycle/Pausable.sol';
-import '@openzeppelin/contracts/introspection/IERC165.sol';
-import './TokenBuyInterface.sol';
 
-/**
- * @dev Required interface of an ERC721 compliant contract.
- */
+library SafeMath {
+    
+    function add(uint256 a, uint256 b) internal pure returns (uint256) {
+        uint256 c = a + b;
+        require(c >= a, "SafeMath: addition overflow");
+
+        return c;
+    }
+
+    
+    function sub(uint256 a, uint256 b) internal pure returns (uint256) {
+        return sub(a, b, "SafeMath: subtraction overflow");
+    }
+
+    
+    function sub(uint256 a, uint256 b, string memory errorMessage) internal pure returns (uint256) {
+        require(b <= a, errorMessage);
+        uint256 c = a - b;
+
+        return c;
+    }
+
+    
+    function mul(uint256 a, uint256 b) internal pure returns (uint256) {
+        
+        
+        
+        if (a == 0) {
+            return 0;
+        }
+
+        uint256 c = a * b;
+        require(c / a == b, "SafeMath: multiplication overflow");
+
+        return c;
+    }
+
+    
+    function div(uint256 a, uint256 b) internal pure returns (uint256) {
+        return div(a, b, "SafeMath: division by zero");
+    }
+
+    
+    function div(uint256 a, uint256 b, string memory errorMessage) internal pure returns (uint256) {
+        
+        require(b > 0, errorMessage);
+        uint256 c = a / b;
+        
+
+        return c;
+    }
+
+    
+    function mod(uint256 a, uint256 b) internal pure returns (uint256) {
+        return mod(a, b, "SafeMath: modulo by zero");
+    }
+
+    
+    function mod(uint256 a, uint256 b, string memory errorMessage) internal pure returns (uint256) {
+        require(b != 0, errorMessage);
+        return a % b;
+    }
+}
+
+interface IERC20 {
+    
+    function totalSupply() external view returns (uint256);
+
+    
+    function balanceOf(address account) external view returns (uint256);
+
+    
+    function transfer(address recipient, uint256 amount) external returns (bool);
+
+    
+    function allowance(address owner, address spender) external view returns (uint256);
+
+    
+    function approve(address spender, uint256 amount) external returns (bool);
+
+    
+    function transferFrom(address sender, address recipient, uint256 amount) external returns (bool);
+
+    
+    event Transfer(address indexed from, address indexed to, uint256 value);
+
+    
+    event Approval(address indexed owner, address indexed spender, uint256 value);
+}
+
+contract IERC721Receiver {
+    
+    function onERC721Received(address operator, address from, uint256 tokenId, bytes memory data)
+    public returns (bytes4);
+}
+
+contract Context {
+    
+    
+    constructor () internal { }
+    
+
+    function _msgSender() internal view returns (address payable) {
+        return msg.sender;
+    }
+
+    function _msgData() internal view returns (bytes memory) {
+        this; 
+        return msg.data;
+    }
+}
+
+library Roles {
+    struct Role {
+        mapping (address => bool) bearer;
+    }
+
+    
+    function add(Role storage role, address account) internal {
+        require(!has(role, account), "Roles: account already has role");
+        role.bearer[account] = true;
+    }
+
+    
+    function remove(Role storage role, address account) internal {
+        require(has(role, account), "Roles: account does not have role");
+        role.bearer[account] = false;
+    }
+
+    
+    function has(Role storage role, address account) internal view returns (bool) {
+        require(account != address(0), "Roles: account is the zero address");
+        return role.bearer[account];
+    }
+}
+
+contract PauserRole is Context {
+    using Roles for Roles.Role;
+
+    event PauserAdded(address indexed account);
+    event PauserRemoved(address indexed account);
+
+    Roles.Role private _pausers;
+
+    constructor () internal {
+        _addPauser(_msgSender());
+    }
+
+    modifier onlyPauser() {
+        require(isPauser(_msgSender()), "PauserRole: caller does not have the Pauser role");
+        _;
+    }
+
+    function isPauser(address account) public view returns (bool) {
+        return _pausers.has(account);
+    }
+
+    function addPauser(address account) public onlyPauser {
+        _addPauser(account);
+    }
+
+    function renouncePauser() public {
+        _removePauser(_msgSender());
+    }
+
+    function _addPauser(address account) internal {
+        _pausers.add(account);
+        emit PauserAdded(account);
+    }
+
+    function _removePauser(address account) internal {
+        _pausers.remove(account);
+        emit PauserRemoved(account);
+    }
+}
+
+contract Pausable is Context, PauserRole {
+    
+    event Paused(address account);
+
+    
+    event Unpaused(address account);
+
+    bool private _paused;
+
+    
+    constructor () internal {
+        _paused = false;
+    }
+
+    
+    function paused() public view returns (bool) {
+        return _paused;
+    }
+
+    
+    modifier whenNotPaused() {
+        require(!_paused, "Pausable: paused");
+        _;
+    }
+
+    
+    modifier whenPaused() {
+        require(_paused, "Pausable: not paused");
+        _;
+    }
+
+    
+    function pause() public onlyPauser whenNotPaused {
+        _paused = true;
+        emit Paused(_msgSender());
+    }
+
+    
+    function unpause() public onlyPauser whenPaused {
+        _paused = false;
+        emit Unpaused(_msgSender());
+    }
+}
+
+interface IERC165 {
+    
+    function supportsInterface(bytes4 interfaceId) external view returns (bool);
+}
+
+contract TokenBuyInterface {
+    function setTokenPrices(uint256 _tokensPerEth, uint256 _tokensPerUsd) public;
+    function buyTokensWithEth() public payable;
+    function buyTokensWithUsdt(uint256 _tokensToBuy) public;
+    function buyTokensWithUsdc(uint256 _tokensToBuy) public;
+    function buyTokensWithDai(uint256 _tokensToBuy) public;
+    function extractTokens(address _tokenToExtract, uint256 _amount) public;
+    function extractEth() public;
+    function sendTokensCreditCard(address _to, uint256 _amount) public;
+    function calculateHowManyTokensYouCanBuyWithEth(uint256 _tokensToBuy) public view returns(uint256);
+    function ovrToken() public returns(address);
+    function tokensPerEth() public returns(uint256);
+    function tokensPerUsd() public returns(uint256);
+    function daiToken() public returns(address);
+    function usdtToken() public returns(address);
+    function usdcToken() public returns(address);
+}
+
 contract IERC721 is IERC165 {
     event Transfer(address indexed from, address indexed to, uint256 indexed tokenId);
     event Approval(address indexed owner, address indexed approved, uint256 indexed tokenId);
@@ -26,7 +260,6 @@ contract IERC721 is IERC165 {
 
     function mintLand(address to, uint256 OVRLandID) public returns (bool);
 }
-
 
 contract Ownable {
     address payable public owner;
@@ -50,13 +283,10 @@ contract Ownable {
     }
 }
 
-
-/// The ICO contract to run auctions and buy OVRLands (ERC721) after winning in exchange for OVRTokens (ERC20)
-/// Also handles land sells and purchases for people that want to exchange their land once they got it
 contract ICO is Ownable, Pausable, IERC721Receiver {
     using SafeMath for uint256;
 
-    // Default state is NOT_STARTED
+    
     enum AuctionState { NOT_STARTED, ACTIVE, ENDED }
 
     enum LandOfferState { NOT_STARTED, ACTIVE, ACCEPTED, DECLINED, EXPIRED, CANCELLED }
@@ -69,7 +299,7 @@ contract ICO is Ownable, Pausable, IERC721Receiver {
         AuctionState state;
         uint256 cashbackAmount;
         bool isCashbackRedeemed;
-        // Marketplace functionality
+        
         uint256 sellPrice;
         bool onSale;
         bool hasBeenRedeemed;
@@ -78,9 +308,9 @@ contract ICO is Ownable, Pausable, IERC721Receiver {
     }
 
     struct LandOffer {
-        uint256 id; // The unique land offer identifier
+        uint256 id; 
         address payable by;
-        uint256 group; // Unique counter for group orders to desactive those after 1 has been approved
+        uint256 group; 
         uint256 landId;
         uint256 price;
         uint256 timestamp;
@@ -88,10 +318,12 @@ contract ICO is Ownable, Pausable, IERC721Receiver {
         LandOfferState state;
     }
 
+    event AuctionStarted(address indexed lastBidder, uint256 indexed landToBuy, uint256 paid, uint256 timestamp);
+    event AuctionBid(address indexed newBidder, address indexed oldBidder, uint256 indexed landToBuy, uint256 paid, uint256 timestamp);
     event WonLand(address indexed winner, uint256 indexed landId, uint256 price);
     event LandSaleStarted(address indexed owner, uint256 indexed landId, uint256 price);
     event CashbackRedeemed(uint256 indexed landId, address indexed receiver, uint256 amount, uint256 timestamp);
-    // For lands that have been on sale but were removed by the owner
+    
     event LandSaleCancelled(address indexed owner, uint256 indexed landId);
     event LandOfferCreated(uint256 indexed id, address indexed by, uint256 indexed landId, uint256 price, uint256 timestamp, uint256 expirationDate);
     event LandSold(uint256 indexed landId, address indexed oldOwner, address indexed buyer, uint256 price, uint256 timestamp);
@@ -107,39 +339,35 @@ contract ICO is Ownable, Pausable, IERC721Receiver {
     uint256 public tokensPerUsd;
     uint256 public tokensPerEth;
 
-    address public approved;
-
     uint256 public initialLandBid;
-    uint256 public lastLandOfferId; // A counter for setting up ids
-    // When the contract was created required for calculating cashbacks
+    uint256 public lastLandOfferId; 
+    
+    
+    uint256 public extractableTokens;
+    
     uint256 public contractCreationDate;
-    // LandID => Land
+    
     mapping (uint256 => Land) public lands;
-    // User => a list of owned land ids
+    
     mapping (address => uint256[]) public ownedLands;
-    // User => how many tokens he can cashback with redeemCashback()
+    
     mapping (address => uint256) public cashbacks;
-    // LandID => All the LandOffer IDS each landId has
+    
     mapping (uint256 => uint256[]) public landOfferIds;
-    // LandOfferId => LandOffer
+    
     mapping (uint256 => LandOffer) public landOffers;
-    // LandID => groupCounter
+    
     mapping (uint256 => uint256) public groupCounters;
-    // Lands that have initiated the auction process can be either active or ended
+    
     uint256[] public activeLands;
-    uint256 public auctionLandDuration = 24 hours; // Default 24 hours
+    uint256 public auctionLandDuration = 24 hours; 
 
-    // Lands that are on sale or have been sold previously 
-    // This array is immutable meaning it won't delete already existing ids
-    // because it's a very gas consuming process.
-    // When a land is sold, the pointed Land id from `lands` is updated
-    // There can be multiple instances of the same id inside so filter them in js
+    
+    
+    
+    
+    
     uint256[] public landsOnSaleOrSold;
-
-    modifier onlyApproved {
-        require(msg.sender == approved);
-        _;
-    }
 
     constructor(address _ovrToken, address _ovrLand, address _tokenBuy, uint256 _initialLandBid) public {
         require(_ovrToken != address(0), "The OVR ERC20 token address can't be empty");
@@ -153,17 +381,121 @@ contract ICO is Ownable, Pausable, IERC721Receiver {
         contractCreationDate = now;
     }
 
-    function setApproved(address _approved) public onlyOwner {
-        approved = _approved;
+    function updateTokenBuyValues() public {
+        dai = TokenBuyInterface(tokenBuy).daiToken();
+        usdt = TokenBuyInterface(tokenBuy).usdtToken();
+        usdc = TokenBuyInterface(tokenBuy).usdcToken();
+        tokensPerUsd = TokenBuyInterface(tokenBuy).tokensPerUsd();
+        tokensPerEth = TokenBuyInterface(tokenBuy).tokensPerEth();
     }
 
-    /// Sets the duration of each land auction
+    
     function setAuctionLandDuration(uint256 _time) public onlyOwner {
         require(_time > 0, "The auction duration can't be zero");
         auctionLandDuration = _time;
     }
 
-    /// To redeem the land that you won in an auction
+    function participate (uint256 _token, uint256 _bid, uint256 _landId) public payable whenNotPaused {
+        require(checkEpoch(_landId), "This land isn't available at the current epoch");
+        require(_bid > 0 || msg.value > 0, "The bid can't be zero");
+        Land memory landToBuy = lands[_landId];
+        require(now.sub(landToBuy.lastBidTimestamp) < auctionLandDuration, 'This land auction has ended');
+
+        updateTokenBuyValues();
+
+        if (landToBuy.state == AuctionState.ACTIVE) {
+            participateActiveAuction(_token, _bid, _landId);
+        } else if (landToBuy.state == AuctionState.NOT_STARTED) {
+            participateNewAuction(_token, _bid, _landId);
+        } else {
+            revert('The auction has ended for this land');
+        }
+    }
+
+    function participateActiveAuction (uint256 _token, uint256 _bid, uint256 _landId) public payable whenNotPaused {
+        Land storage landToBuy = lands[_landId];
+        uint256 nextBid = landToBuy.paid.mul(2);
+        address payable oldBidder = landToBuy.owner;
+        uint256 oldBid = landToBuy.paid;
+        uint256 allowance;
+
+        if (_token == 0) {
+            
+            _bid = msg.value.mul(tokensPerEth);
+        } else if (_token == 1) {
+            
+            uint256 _allowance = IERC20(dai).allowance(msg.sender, address(this));
+            allowance = _allowance.mul(tokensPerUsd);
+        } else if (_token == 2) {
+            uint256 _allowance = IERC20(usdt).allowance(msg.sender, address(this));
+            allowance = _allowance.mul(tokensPerUsd);
+        } else if (_token == 3) {
+            uint256 _allowance = IERC20(usdc).allowance(msg.sender, address(this));
+            allowance = _allowance.mul(tokensPerUsd);
+        } else if (_token == 4) {
+            allowance = IERC20(ovrToken).allowance(msg.sender, address(this));
+        }
+
+        require(_bid >= nextBid, 'Your bid must be equal or larger than double the previous one');
+
+        
+        if (landToBuy.paidWith == 0) {
+            oldBidder.transfer(oldBid.div(tokensPerEth));
+        } else if (landToBuy.paidWith == 1) {
+            IERC20(dai).transfer(oldBidder, oldBid.div(tokensPerUsd));
+        } else if (landToBuy.paidWith == 2) {
+            IERC20(usdt).transfer(oldBidder, oldBid.div(tokensPerUsd));
+        } else if (landToBuy.paidWith == 3) {
+            IERC20(usdc).transfer(oldBidder, oldBid.div(tokensPerUsd));
+        } else if (landToBuy.paidWith == 4) {
+            IERC20(ovrToken).transfer(oldBidder, oldBid);
+        }
+        landToBuy.paidWith = _token;
+        landToBuy.owner = msg.sender;
+        landToBuy.paid = _bid;
+        landToBuy.lastBidTimestamp = now;
+        extractableTokens = extractableTokens.add(oldBid);
+        emit AuctionBid(msg.sender, oldBidder, _landId, _bid, now);
+    }
+
+    function participateNewAuction (uint256 _token, uint256 _bid, uint256 _landId) public payable whenNotPaused {
+        uint256 allowance;
+
+        if (_token == 0) {
+            
+            _bid = msg.value.mul(tokensPerEth);
+        } else if (_token == 1) {
+            
+            uint256 _allowance = IERC20(dai).allowance(msg.sender, address(this));
+            allowance = _allowance.mul(tokensPerUsd);
+        } else if (_token == 2) {
+            uint256 _allowance = IERC20(usdt).allowance(msg.sender, address(this));
+            allowance = _allowance.mul(tokensPerUsd);
+        } else if (_token == 3) {
+            uint256 _allowance = IERC20(usdc).allowance(msg.sender, address(this));
+            allowance = _allowance.mul(tokensPerUsd);
+        } else if (_token == 4) {
+            allowance = IERC20(ovrToken).allowance(msg.sender, address(this));
+        }
+
+        require(_bid >= initialLandBid, 'The bid must be larger or equal the initial minimum');
+        require(allowance >= initialLandBid, 'Your allowance must equal or exceed the cost of participating in this auction');
+
+        lands[_landId] = Land(msg.sender, _landId, _bid, now, AuctionState.ACTIVE, 0, false, 0, false, false, now, _token);
+        if (_token == 1) {
+            IERC20(dai).transferFrom(msg.sender, address(this), _bid.div(tokensPerUsd));
+        } else if (_token == 2) {
+            IERC20(usdt).transferFrom(msg.sender, address(this), _bid.div(tokensPerUsd));
+        } else if (_token == 3) {
+            IERC20(usdc).transferFrom(msg.sender, address(this), _bid.div(tokensPerUsd));
+        } else if (_token == 4) {
+            IERC20(ovrToken).transferFrom(msg.sender, address(this), _bid);
+        }
+        activeLands.push(_landId);
+        emit AuctionStarted(msg.sender, _landId, _bid, now);
+    }
+
+    
     function redeemWonLand(uint256 _landId) public whenNotPaused {
         Land storage land = lands[_landId];
         if (now.sub(land.lastBidTimestamp) >= auctionLandDuration) {
@@ -198,7 +530,7 @@ contract ICO is Ownable, Pausable, IERC721Receiver {
         cashbacks[msg.sender] = cashbacks[msg.sender].add(cashback);
         land.cashbackAmount = cashback;
         land.hasBeenRedeemed = true;
-        // Transfer the land to the user
+        
         IERC721(ovrLand).mintLand(msg.sender, _landId);
         ownedLands[msg.sender].push(_landId);
         emit WonLand(msg.sender, _landId, land.paid);
@@ -210,8 +542,8 @@ contract ICO is Ownable, Pausable, IERC721Receiver {
         }
     }
 
-    /// To get your cashback for the buyers in the initial 9 months
-    /// @param _landId The land whose cashback you want to get
+    
+    
     function redeemCashback(uint256 _landId) public whenNotPaused {
         Land storage land = lands[_landId];
         require(!land.isCashbackRedeemed, 'The cashback has already been redeemed for this land');
@@ -227,7 +559,7 @@ contract ICO is Ownable, Pausable, IERC721Receiver {
         emit CashbackRedeemed(_landId, msg.sender, land.cashbackAmount, now);
     }
 
-    /// To extract the tokens that may have been sent to this contract by accident
+    
     function extractTokens(address _tokenToExtract, uint256 _amount) public onlyOwner whenNotPaused {
         IERC20(_tokenToExtract).transfer(owner, _amount);
     }
@@ -236,17 +568,17 @@ contract ICO is Ownable, Pausable, IERC721Receiver {
         owner.transfer(address(this).balance);
     }
 
-    /// To put on sell a land you own
-    /// Note: the price can be 0 to give it away for free
-    /// The seller must approve the ERC721 token to the ICO contract ONLY if _onSale is true
-    /// @param _onSale To indicate whether you want to put it on sale or remove it from the sale
+    
+    
+    
+    
     function putLandOnSale(uint256 _landId, uint256 _price, bool _onSale) public whenNotPaused {
         Land storage land = lands[_landId];
         require(msg.sender == land.owner, 'You must be the land owner to put it on sale');
         require(land.state == AuctionState.ENDED, 'The land auction must have been completed to put it on sale');
         if (_onSale) {
-            address _approved = IERC721(ovrLand).getApproved(_landId);
-            require(_approved == address(this), 'You must approve this contract to manage your ERC721 token');
+            address approved = IERC721(ovrLand).getApproved(_landId);
+            require(approved == address(this), 'You must approve this contract to manage your ERC721 token');
         }
         land.onSale = _onSale;
         land.sellPrice = _price;
@@ -261,8 +593,8 @@ contract ICO is Ownable, Pausable, IERC721Receiver {
         }
     }
 
-    /// To buy a land on sale
-    /// The buyer must approve the land price in OVR tokens to purchase it beforehand
+    
+    
     function buyLand(uint256 _landId) public whenNotPaused {
         Land storage land = lands[_landId];
         address oldOwner = land.owner;
@@ -280,11 +612,11 @@ contract ICO is Ownable, Pausable, IERC721Receiver {
         emit LandSold(_landId, oldOwner, msg.sender, salePrice, now);
     }
 
-    /// To offer someone to buy his land for a specific price
-    /// it doesn't matter if the land is on sale or not, this offer will be sent regardless
-    /// If the user already has an existing offer, override it with this new one
-    /// The frontend will have to get all the offers and check those made by the same person to only keep
-    /// the most recent one by looking at the timestamp
+    
+    
+    
+    
+    
     function offerToBuyLand(uint256 _landId, uint256 _price, uint256 _expirationDate) public whenNotPaused {
         Land storage land = lands[_landId];
         uint256 allowance = IERC20(ovrToken).allowance(msg.sender, address(this));
@@ -300,7 +632,7 @@ contract ICO is Ownable, Pausable, IERC721Receiver {
         emit LandOfferCreated(lastLandOfferId, msg.sender, _landId, _price, now, _expirationDate);
     }
 
-    /// To cancel buy offers
+    
     function cancelBuyOffer(uint256 _offerId) public whenNotPaused {
         LandOffer storage offer = landOffers[_offerId];
         require(msg.sender == offer.by, 'You must be the owner to cancel the buy offer');
@@ -309,8 +641,8 @@ contract ICO is Ownable, Pausable, IERC721Receiver {
         emit LandOfferCancelled(_offerId);
     }
 
-    /// To respond to a buy land offer independently on whether your land is on sale or not
-    /// kinda like ebay does it with the custom buy offers
+    
+    
     function respondToBuyOffer(uint256 _landOfferId, bool _accept) public whenNotPaused {
         LandOffer storage landOffer = landOffers[_landOfferId];
         Land storage land = lands[landOffer.landId];
@@ -319,8 +651,8 @@ contract ICO is Ownable, Pausable, IERC721Receiver {
         require(land.owner == msg.sender, 'You must be the owner to accept the land offer');
 
         if (_accept) {
-            address _approved = IERC721(ovrLand).getApproved(land.landToBuy);
-            require(_approved == address(this), 'You must approve this contract to manage your ERC721 token');
+            address approved = IERC721(ovrLand).getApproved(land.landToBuy);
+            require(approved == address(this), 'You must approve this contract to manage your ERC721 token');
             emit LandSold(land.landToBuy, land.owner, landOffer.by, landOffer.price, now);
             IERC20(ovrToken).transferFrom(landOffer.by, land.owner, landOffer.price);
             IERC721(ovrLand).safeTransferFrom(land.owner, landOffer.by, land.landToBuy);
@@ -335,35 +667,13 @@ contract ICO is Ownable, Pausable, IERC721Receiver {
         }
     }
 
-    /// To update the lands value array
-    function setLands(
-        address payable owner, 
-        uint256 landToBuy, 
-        uint256 paid, 
-        uint256 lastBidTimestamp, 
-        AuctionState state, 
-        uint256 cashbackAmount, 
-        bool isCashbackRedeemed, 
-        uint256 sellPrice, 
-        bool onSale, 
-        bool hasBeenRedeemed, 
-        uint256 lastUpdateTimestamp, 
-        uint256 paidWith
-    ) public onlyApproved {
-        lands[landToBuy] = Land(owner, landToBuy, paid, lastBidTimestamp, state, cashbackAmount, isCashbackRedeemed, sellPrice, onSale, hasBeenRedeemed, lastUpdateTimestamp, paidWith);
-    }
-
-    function pushActiveLand(uint256 _landId) public onlyApproved {
-        activeLands.push(_landId);
-    }
-
-    /// Returns an array with the the landOfferIds for a given land id
-    /// you can check each independently using the array ownedLands
+    
+    
     function checkMyLandOffers(uint256 _landId) public view returns(uint256[] memory) {
         return landOfferIds[_landId];
     }
 
-    /// Returns the landIds you won so you know which landIds you can redeem
+    
     function checkWonLands() public view returns(uint256[] memory) {
         uint256[] memory result;
         uint256 counter = 0;
@@ -377,11 +687,11 @@ contract ICO is Ownable, Pausable, IERC721Receiver {
         return result;
     }
 
-    /// Checks if the token you want to buy is within the epoch available
-    /// @return bool True if it's in a valid epoch and false if not
+    
+    
     function checkEpoch(uint256 _landId) public view returns(bool) {
         uint256 currentMonth = now.sub(contractCreationDate).div(30) + 1;
-        // Extract the last 2 digits
+        
         uint256 landIdDigits = _landId % 100;
         if (currentMonth == 1) {
             if (landIdDigits <= 17) {
@@ -437,98 +747,8 @@ contract ICO is Ownable, Pausable, IERC721Receiver {
     }
 
     function onERC721Received(address operator, address from, uint256 tokenId, bytes memory data) public returns (bytes4) {
-        // Both return values work
+        
         return this.onERC721Received.selector;
-        // return bytes4(keccak256("onERC721Received(address,address,uint256,bytes)"));
-    }
-}
-
-
-contract ICOParticipate is Pausable {
-    using SafeMath for uint256;
-
-    event AuctionStarted(address indexed lastBidder, uint256 indexed landToBuy, uint256 paid, uint256 timestamp);
-    event AuctionBid(address indexed newBidder, address indexed oldBidder, uint256 indexed landToBuy, uint256 paid, uint256 timestamp);
-
-    address public ovrLand;
-    address public tokenBuy;
-    IERC20 public ovrToken;
-    IERC20 public dai;
-    IERC20 public usdt;
-    IERC20 public usdc;
-    uint256 public tokensPerUsd;
-    uint256 public tokensPerEth;
-    ICO public ico;
-
-    constructor (address _ico) public {
-        ico = ICO(_ico);
-        ovrLand = ico.ovrLand();
-        tokenBuy = ico.tokenBuy();
-        ovrToken = IERC20(ico.ovrToken());
-        dai = IERC20(TokenBuyInterface(tokenBuy).daiToken());
-        usdt = IERC20(TokenBuyInterface(tokenBuy).usdtToken());
-        usdc = IERC20(TokenBuyInterface(tokenBuy).usdcToken());
-        updateTokenBuyValues();
-    }
-
-    function updateTokenBuyValues() public {
-        tokensPerUsd = TokenBuyInterface(tokenBuy).tokensPerUsd();
-        tokensPerEth = TokenBuyInterface(tokenBuy).tokensPerEth();
-    }
-
-    function participate (uint256 _token, uint256 _bid, uint256 _landId) public payable whenNotPaused {
-        require(ico.checkEpoch(_landId), "This land isn't available at the current epoch");
-        require(_bid > 0 || msg.value > 0, "The bid can't be zero");
-        (address payable owner,,, uint256 lastBidTimestamp, ICO.AuctionState state,,,,,,,) = ico.lands(_landId);
-        require(now.sub(lastBidTimestamp) < ico.auctionLandDuration(), 'This land auction has ended');
-
-        updateTokenBuyValues();
-
-        if (state == ICO.AuctionState.ACTIVE) {
-            participateActiveAuction(_token, _bid, _landId);
-        } else if (state == ICO.AuctionState.NOT_STARTED) {
-            participateNewAuction(_token, _bid, _landId);
-        } else {
-            revert('The auction has ended for this land');
-        }
-    }
-
-    function participateActiveAuction (uint256 _token, uint256 _bid, uint256 _landId) public payable whenNotPaused {
-        (address payable oldBidder, uint256 landToBuy, uint256 oldBid, uint256 lastBidTimestamp, ICO.AuctionState state, uint256 cashbackAmount, bool isCashbackRedeemed, uint256 sellPrice, bool onSale, bool hasBeenRedeemed, uint256 lastUpdateTimestamp, uint256 paidWith) = ico.lands(_landId);
-
-        require(_bid >= oldBid.mul(2), 'Your bid must be equal or larger than double the previous one');
-
-        // Return previous bidder's tokens
-        if (paidWith == 0) {
-            oldBidder.transfer(oldBid.div(tokensPerEth));
-        } else if (paidWith == 1) {
-            dai.transfer(oldBidder, oldBid.div(tokensPerUsd));
-        } else if (paidWith == 2) {
-            usdt.transfer(oldBidder, oldBid.div(tokensPerUsd));
-        } else if (paidWith == 3) {
-            usdc.transfer(oldBidder, oldBid.div(tokensPerUsd));
-        } else if (paidWith == 4) {
-            ovrToken.transfer(oldBidder, oldBid);
-        }
-
-        ico.setLands(msg.sender, landToBuy, _bid, now, state, cashbackAmount, isCashbackRedeemed, sellPrice, onSale, hasBeenRedeemed, lastUpdateTimestamp, _token);
-        emit AuctionBid(msg.sender, oldBidder, _landId, _bid, now);
-    }
-
-    function participateNewAuction (uint256 _token, uint256 _bid, uint256 _landId) public payable whenNotPaused {
-        require(_bid >= ico.initialLandBid(), 'The bid must be larger or equal the initial minimum');
-
-        ico.setLands(msg.sender, _landId, _bid, now, ICO.AuctionState.ACTIVE, 0, false, 0, false, false, now, _token);
-        if (_token == 1) {
-            dai.transferFrom(msg.sender, address(this), _bid.div(tokensPerUsd));
-        } else if (_token == 2) {
-            usdt.transferFrom(msg.sender, address(this), _bid.div(tokensPerUsd));
-        } else if (_token == 3) {
-            usdc.transferFrom(msg.sender, address(this), _bid.div(tokensPerUsd));
-        } else if (_token == 4) {
-            ovrToken.transferFrom(msg.sender, address(this), _bid);
-        }
-        ico.pushActiveLand(_landId);
-        emit AuctionStarted(msg.sender, _landId, _bid, now);
+        
     }
 }

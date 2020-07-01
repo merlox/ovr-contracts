@@ -144,27 +144,117 @@
       "payable": false,
       "stateMutability": "view",
       "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [],
+      "name": "ovrToken",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [],
+      "name": "tokensPerEth",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [],
+      "name": "tokensPerUsd",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [],
+      "name": "daiToken",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [],
+      "name": "usdtToken",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [],
+      "name": "usdcToken",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
     }
   ],
-  "metadata": "{\"compiler\":{\"version\":\"0.5.11+commit.c082d0b4\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"constant\":false,\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_tokensToBuy\",\"type\":\"uint256\"}],\"name\":\"buyTokensWithDai\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_tokenToExtract\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"_amount\",\"type\":\"uint256\"}],\"name\":\"extractTokens\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_tokensPerEth\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"_tokensPerUsd\",\"type\":\"uint256\"}],\"name\":\"setTokenPrices\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_tokensToBuy\",\"type\":\"uint256\"}],\"name\":\"buyTokensWithUsdt\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[],\"name\":\"extractEth\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_tokensToBuy\",\"type\":\"uint256\"}],\"name\":\"buyTokensWithUsdc\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_tokensToBuy\",\"type\":\"uint256\"}],\"name\":\"calculateHowManyTokensYouCanBuyWithEth\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[],\"name\":\"buyTokensWithEth\",\"outputs\":[],\"payable\":true,\"stateMutability\":\"payable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_to\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"_amount\",\"type\":\"uint256\"}],\"name\":\"sendTokensCreditCard\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"methods\":{}},\"userdoc\":{\"methods\":{}}},\"settings\":{\"compilationTarget\":{\"/C/Users/merun/Desktop/ovr/ovr-contracts/contracts/TokenBuyInterface.sol\":\"TokenBuyInterface\"},\"evmVersion\":\"petersburg\",\"libraries\":{},\"optimizer\":{\"enabled\":false,\"runs\":200},\"remappings\":[]},\"sources\":{\"/C/Users/merun/Desktop/ovr/ovr-contracts/contracts/TokenBuyInterface.sol\":{\"keccak256\":\"0x0cea670667f0c9c67d540d7824473586d4a12a9b96b9440541c1996ffd8cf2eb\",\"urls\":[\"bzz-raw://2aaf1dc2850a15aad9dc84937146dbe3efdb060460d28e2be4cd8f236f80b488\",\"dweb:/ipfs/QmSkwMLHhdkxayoBmcLU1wDMtwRujPYs8zHa8mjYr4ZNtT\"]}},\"version\":1}",
+  "metadata": "{\"compiler\":{\"version\":\"0.5.11+commit.c082d0b4\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"constant\":false,\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_tokensToBuy\",\"type\":\"uint256\"}],\"name\":\"buyTokensWithDai\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[],\"name\":\"usdcToken\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_tokenToExtract\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"_amount\",\"type\":\"uint256\"}],\"name\":\"extractTokens\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_tokensPerEth\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"_tokensPerUsd\",\"type\":\"uint256\"}],\"name\":\"setTokenPrices\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_tokensToBuy\",\"type\":\"uint256\"}],\"name\":\"buyTokensWithUsdt\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[],\"name\":\"extractEth\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_tokensToBuy\",\"type\":\"uint256\"}],\"name\":\"buyTokensWithUsdc\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[],\"name\":\"usdtToken\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_tokensToBuy\",\"type\":\"uint256\"}],\"name\":\"calculateHowManyTokensYouCanBuyWithEth\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[],\"name\":\"tokensPerUsd\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[],\"name\":\"daiToken\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[],\"name\":\"ovrToken\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[],\"name\":\"tokensPerEth\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[],\"name\":\"buyTokensWithEth\",\"outputs\":[],\"payable\":true,\"stateMutability\":\"payable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_to\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"_amount\",\"type\":\"uint256\"}],\"name\":\"sendTokensCreditCard\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"methods\":{}},\"userdoc\":{\"methods\":{}}},\"settings\":{\"compilationTarget\":{\"/C/Users/merun/Desktop/ovr/ovr-contracts/contracts/TokenBuyInterface.sol\":\"TokenBuyInterface\"},\"evmVersion\":\"petersburg\",\"libraries\":{},\"optimizer\":{\"enabled\":false,\"runs\":200},\"remappings\":[]},\"sources\":{\"/C/Users/merun/Desktop/ovr/ovr-contracts/contracts/TokenBuyInterface.sol\":{\"keccak256\":\"0x6d27c4e5995d0d96646c8b0ca22a79f7d0b0ba3d0021dba1fffca13f5abdb5be\",\"urls\":[\"bzz-raw://0a20ecf2ce20abc0ea5520af572c51fd915f4a2c0fe3cad49f983d23aa5383cd\",\"dweb:/ipfs/Qmc6pQD96NxepScPcwcEaRzCY24bdgQ2P5brFVsaZCMyv8\"]}},\"version\":1}",
   "bytecode": "0x",
   "deployedBytecode": "0x",
   "sourceMap": "",
   "deployedSourceMap": "",
-  "source": "pragma solidity ^0.5.0;\n\ncontract TokenBuyInterface {\n    function setTokenPrices(uint256 _tokensPerEth, uint256 _tokensPerUsd) public;\n    function buyTokensWithEth() public payable;\n    function buyTokensWithUsdt(uint256 _tokensToBuy) public;\n    function buyTokensWithUsdc(uint256 _tokensToBuy) public;\n    function buyTokensWithDai(uint256 _tokensToBuy) public;\n    function extractTokens(address _tokenToExtract, uint256 _amount) public;\n    function extractEth() public;\n    function sendTokensCreditCard(address _to, uint256 _amount) public;\n    function calculateHowManyTokensYouCanBuyWithEth(uint256 _tokensToBuy) public view returns(uint256);\n}",
+  "source": "pragma solidity ^0.5.0;\n\ncontract TokenBuyInterface {\n    function setTokenPrices(uint256 _tokensPerEth, uint256 _tokensPerUsd) public;\n    function buyTokensWithEth() public payable;\n    function buyTokensWithUsdt(uint256 _tokensToBuy) public;\n    function buyTokensWithUsdc(uint256 _tokensToBuy) public;\n    function buyTokensWithDai(uint256 _tokensToBuy) public;\n    function extractTokens(address _tokenToExtract, uint256 _amount) public;\n    function extractEth() public;\n    function sendTokensCreditCard(address _to, uint256 _amount) public;\n    function calculateHowManyTokensYouCanBuyWithEth(uint256 _tokensToBuy) public view returns(uint256);\n    function ovrToken() public returns(address);\n    function tokensPerEth() public returns(uint256);\n    function tokensPerUsd() public returns(uint256);\n    function daiToken() public returns(address);\n    function usdtToken() public returns(address);\n    function usdcToken() public returns(address);\n}",
   "sourcePath": "C:\\Users\\merun\\Desktop\\ovr\\ovr-contracts\\contracts\\TokenBuyInterface.sol",
   "ast": {
     "absolutePath": "/C/Users/merun/Desktop/ovr/ovr-contracts/contracts/TokenBuyInterface.sol",
     "exportedSymbols": {
       "TokenBuyInterface": [
-        5232
+        8688
       ]
     },
-    "id": 5233,
+    "id": 8689,
     "nodeType": "SourceUnit",
     "nodes": [
       {
-        "id": 5182,
+        "id": 8608,
         "literals": [
           "solidity",
           "^",
@@ -172,7 +262,7 @@
           ".0"
         ],
         "nodeType": "PragmaDirective",
-        "src": "0:23:6"
+        "src": "0:23:7"
       },
       {
         "baseContracts": [],
@@ -180,9 +270,9 @@
         "contractKind": "contract",
         "documentation": null,
         "fullyImplemented": false,
-        "id": 5232,
+        "id": 8688,
         "linearizedBaseContracts": [
-          5232
+          8688
         ],
         "name": "TokenBuyInterface",
         "nodeType": "ContractDefinition",
@@ -190,23 +280,23 @@
           {
             "body": null,
             "documentation": null,
-            "id": 5189,
+            "id": 8615,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "setTokenPrices",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 5187,
+              "id": 8613,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 5184,
+                  "id": 8610,
                   "name": "_tokensPerEth",
                   "nodeType": "VariableDeclaration",
-                  "scope": 5189,
-                  "src": "82:21:6",
+                  "scope": 8615,
+                  "src": "82:21:7",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -214,10 +304,10 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 5183,
+                    "id": 8609,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
-                    "src": "82:7:6",
+                    "src": "82:7:7",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -228,11 +318,11 @@
                 },
                 {
                   "constant": false,
-                  "id": 5186,
+                  "id": 8612,
                   "name": "_tokensPerUsd",
                   "nodeType": "VariableDeclaration",
-                  "scope": 5189,
-                  "src": "105:21:6",
+                  "scope": 8615,
+                  "src": "105:21:7",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -240,10 +330,10 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 5185,
+                    "id": 8611,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
-                    "src": "105:7:6",
+                    "src": "105:7:7",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -253,16 +343,16 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "81:46:6"
+              "src": "81:46:7"
             },
             "returnParameters": {
-              "id": 5188,
+              "id": 8614,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "134:0:6"
+              "src": "134:0:7"
             },
-            "scope": 5232,
-            "src": "58:77:6",
+            "scope": 8688,
+            "src": "58:77:7",
             "stateMutability": "nonpayable",
             "superFunction": null,
             "visibility": "public"
@@ -270,26 +360,26 @@
           {
             "body": null,
             "documentation": null,
-            "id": 5192,
+            "id": 8618,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "buyTokensWithEth",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 5190,
+              "id": 8616,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "165:2:6"
+              "src": "165:2:7"
             },
             "returnParameters": {
-              "id": 5191,
+              "id": 8617,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "182:0:6"
+              "src": "182:0:7"
             },
-            "scope": 5232,
-            "src": "140:43:6",
+            "scope": 8688,
+            "src": "140:43:7",
             "stateMutability": "payable",
             "superFunction": null,
             "visibility": "public"
@@ -297,23 +387,23 @@
           {
             "body": null,
             "documentation": null,
-            "id": 5197,
+            "id": 8623,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "buyTokensWithUsdt",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 5195,
+              "id": 8621,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 5194,
+                  "id": 8620,
                   "name": "_tokensToBuy",
                   "nodeType": "VariableDeclaration",
-                  "scope": 5197,
-                  "src": "215:20:6",
+                  "scope": 8623,
+                  "src": "215:20:7",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -321,10 +411,10 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 5193,
+                    "id": 8619,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
-                    "src": "215:7:6",
+                    "src": "215:7:7",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -334,16 +424,16 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "214:22:6"
+              "src": "214:22:7"
             },
             "returnParameters": {
-              "id": 5196,
+              "id": 8622,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "243:0:6"
+              "src": "243:0:7"
             },
-            "scope": 5232,
-            "src": "188:56:6",
+            "scope": 8688,
+            "src": "188:56:7",
             "stateMutability": "nonpayable",
             "superFunction": null,
             "visibility": "public"
@@ -351,23 +441,23 @@
           {
             "body": null,
             "documentation": null,
-            "id": 5202,
+            "id": 8628,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "buyTokensWithUsdc",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 5200,
+              "id": 8626,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 5199,
+                  "id": 8625,
                   "name": "_tokensToBuy",
                   "nodeType": "VariableDeclaration",
-                  "scope": 5202,
-                  "src": "276:20:6",
+                  "scope": 8628,
+                  "src": "276:20:7",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -375,10 +465,10 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 5198,
+                    "id": 8624,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
-                    "src": "276:7:6",
+                    "src": "276:7:7",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -388,16 +478,16 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "275:22:6"
+              "src": "275:22:7"
             },
             "returnParameters": {
-              "id": 5201,
+              "id": 8627,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "304:0:6"
+              "src": "304:0:7"
             },
-            "scope": 5232,
-            "src": "249:56:6",
+            "scope": 8688,
+            "src": "249:56:7",
             "stateMutability": "nonpayable",
             "superFunction": null,
             "visibility": "public"
@@ -405,23 +495,23 @@
           {
             "body": null,
             "documentation": null,
-            "id": 5207,
+            "id": 8633,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "buyTokensWithDai",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 5205,
+              "id": 8631,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 5204,
+                  "id": 8630,
                   "name": "_tokensToBuy",
                   "nodeType": "VariableDeclaration",
-                  "scope": 5207,
-                  "src": "336:20:6",
+                  "scope": 8633,
+                  "src": "336:20:7",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -429,10 +519,10 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 5203,
+                    "id": 8629,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
-                    "src": "336:7:6",
+                    "src": "336:7:7",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -442,16 +532,16 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "335:22:6"
+              "src": "335:22:7"
             },
             "returnParameters": {
-              "id": 5206,
+              "id": 8632,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "364:0:6"
+              "src": "364:0:7"
             },
-            "scope": 5232,
-            "src": "310:55:6",
+            "scope": 8688,
+            "src": "310:55:7",
             "stateMutability": "nonpayable",
             "superFunction": null,
             "visibility": "public"
@@ -459,23 +549,23 @@
           {
             "body": null,
             "documentation": null,
-            "id": 5214,
+            "id": 8640,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "extractTokens",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 5212,
+              "id": 8638,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 5209,
+                  "id": 8635,
                   "name": "_tokenToExtract",
                   "nodeType": "VariableDeclaration",
-                  "scope": 5214,
-                  "src": "393:23:6",
+                  "scope": 8640,
+                  "src": "393:23:7",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -483,10 +573,10 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 5208,
+                    "id": 8634,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
-                    "src": "393:7:6",
+                    "src": "393:7:7",
                     "stateMutability": "nonpayable",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
@@ -498,11 +588,11 @@
                 },
                 {
                   "constant": false,
-                  "id": 5211,
+                  "id": 8637,
                   "name": "_amount",
                   "nodeType": "VariableDeclaration",
-                  "scope": 5214,
-                  "src": "418:15:6",
+                  "scope": 8640,
+                  "src": "418:15:7",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -510,10 +600,10 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 5210,
+                    "id": 8636,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
-                    "src": "418:7:6",
+                    "src": "418:7:7",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -523,16 +613,16 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "392:42:6"
+              "src": "392:42:7"
             },
             "returnParameters": {
-              "id": 5213,
+              "id": 8639,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "441:0:6"
+              "src": "441:0:7"
             },
-            "scope": 5232,
-            "src": "370:72:6",
+            "scope": 8688,
+            "src": "370:72:7",
             "stateMutability": "nonpayable",
             "superFunction": null,
             "visibility": "public"
@@ -540,26 +630,26 @@
           {
             "body": null,
             "documentation": null,
-            "id": 5217,
+            "id": 8643,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "extractEth",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 5215,
+              "id": 8641,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "466:2:6"
+              "src": "466:2:7"
             },
             "returnParameters": {
-              "id": 5216,
+              "id": 8642,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "475:0:6"
+              "src": "475:0:7"
             },
-            "scope": 5232,
-            "src": "447:29:6",
+            "scope": 8688,
+            "src": "447:29:7",
             "stateMutability": "nonpayable",
             "superFunction": null,
             "visibility": "public"
@@ -567,23 +657,23 @@
           {
             "body": null,
             "documentation": null,
-            "id": 5224,
+            "id": 8650,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "sendTokensCreditCard",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 5222,
+              "id": 8648,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 5219,
+                  "id": 8645,
                   "name": "_to",
                   "nodeType": "VariableDeclaration",
-                  "scope": 5224,
-                  "src": "511:11:6",
+                  "scope": 8650,
+                  "src": "511:11:7",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -591,10 +681,10 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 5218,
+                    "id": 8644,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
-                    "src": "511:7:6",
+                    "src": "511:7:7",
                     "stateMutability": "nonpayable",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
@@ -606,11 +696,11 @@
                 },
                 {
                   "constant": false,
-                  "id": 5221,
+                  "id": 8647,
                   "name": "_amount",
                   "nodeType": "VariableDeclaration",
-                  "scope": 5224,
-                  "src": "524:15:6",
+                  "scope": 8650,
+                  "src": "524:15:7",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -618,10 +708,10 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 5220,
+                    "id": 8646,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
-                    "src": "524:7:6",
+                    "src": "524:7:7",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -631,16 +721,16 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "510:30:6"
+              "src": "510:30:7"
             },
             "returnParameters": {
-              "id": 5223,
+              "id": 8649,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "547:0:6"
+              "src": "547:0:7"
             },
-            "scope": 5232,
-            "src": "481:67:6",
+            "scope": 8688,
+            "src": "481:67:7",
             "stateMutability": "nonpayable",
             "superFunction": null,
             "visibility": "public"
@@ -648,23 +738,23 @@
           {
             "body": null,
             "documentation": null,
-            "id": 5231,
+            "id": 8657,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "calculateHowManyTokensYouCanBuyWithEth",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 5227,
+              "id": 8653,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 5226,
+                  "id": 8652,
                   "name": "_tokensToBuy",
                   "nodeType": "VariableDeclaration",
-                  "scope": 5231,
-                  "src": "601:20:6",
+                  "scope": 8657,
+                  "src": "601:20:7",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -672,10 +762,10 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 5225,
+                    "id": 8651,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
-                    "src": "601:7:6",
+                    "src": "601:7:7",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -685,19 +775,19 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "600:22:6"
+              "src": "600:22:7"
             },
             "returnParameters": {
-              "id": 5230,
+              "id": 8656,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 5229,
+                  "id": 8655,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 5231,
-                  "src": "643:7:6",
+                  "scope": 8657,
+                  "src": "643:7:7",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -705,10 +795,10 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 5228,
+                    "id": 8654,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
-                    "src": "643:7:6",
+                    "src": "643:7:7",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -718,33 +808,361 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "642:9:6"
+              "src": "642:9:7"
             },
-            "scope": 5232,
-            "src": "553:99:6",
+            "scope": 8688,
+            "src": "553:99:7",
             "stateMutability": "view",
+            "superFunction": null,
+            "visibility": "public"
+          },
+          {
+            "body": null,
+            "documentation": null,
+            "id": 8662,
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "ovrToken",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 8658,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "674:2:7"
+            },
+            "returnParameters": {
+              "id": 8661,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 8660,
+                  "name": "",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 8662,
+                  "src": "692:7:7",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 8659,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "692:7:7",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "691:9:7"
+            },
+            "scope": 8688,
+            "src": "657:44:7",
+            "stateMutability": "nonpayable",
+            "superFunction": null,
+            "visibility": "public"
+          },
+          {
+            "body": null,
+            "documentation": null,
+            "id": 8667,
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "tokensPerEth",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 8663,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "727:2:7"
+            },
+            "returnParameters": {
+              "id": 8666,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 8665,
+                  "name": "",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 8667,
+                  "src": "745:7:7",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 8664,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "745:7:7",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "744:9:7"
+            },
+            "scope": 8688,
+            "src": "706:48:7",
+            "stateMutability": "nonpayable",
+            "superFunction": null,
+            "visibility": "public"
+          },
+          {
+            "body": null,
+            "documentation": null,
+            "id": 8672,
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "tokensPerUsd",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 8668,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "780:2:7"
+            },
+            "returnParameters": {
+              "id": 8671,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 8670,
+                  "name": "",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 8672,
+                  "src": "798:7:7",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 8669,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "798:7:7",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "797:9:7"
+            },
+            "scope": 8688,
+            "src": "759:48:7",
+            "stateMutability": "nonpayable",
+            "superFunction": null,
+            "visibility": "public"
+          },
+          {
+            "body": null,
+            "documentation": null,
+            "id": 8677,
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "daiToken",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 8673,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "829:2:7"
+            },
+            "returnParameters": {
+              "id": 8676,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 8675,
+                  "name": "",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 8677,
+                  "src": "847:7:7",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 8674,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "847:7:7",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "846:9:7"
+            },
+            "scope": 8688,
+            "src": "812:44:7",
+            "stateMutability": "nonpayable",
+            "superFunction": null,
+            "visibility": "public"
+          },
+          {
+            "body": null,
+            "documentation": null,
+            "id": 8682,
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "usdtToken",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 8678,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "879:2:7"
+            },
+            "returnParameters": {
+              "id": 8681,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 8680,
+                  "name": "",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 8682,
+                  "src": "897:7:7",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 8679,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "897:7:7",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "896:9:7"
+            },
+            "scope": 8688,
+            "src": "861:45:7",
+            "stateMutability": "nonpayable",
+            "superFunction": null,
+            "visibility": "public"
+          },
+          {
+            "body": null,
+            "documentation": null,
+            "id": 8687,
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "usdcToken",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 8683,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "929:2:7"
+            },
+            "returnParameters": {
+              "id": 8686,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 8685,
+                  "name": "",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 8687,
+                  "src": "947:7:7",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 8684,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "947:7:7",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "946:9:7"
+            },
+            "scope": 8688,
+            "src": "911:45:7",
+            "stateMutability": "nonpayable",
             "superFunction": null,
             "visibility": "public"
           }
         ],
-        "scope": 5233,
-        "src": "25:629:6"
+        "scope": 8689,
+        "src": "25:933:7"
       }
     ],
-    "src": "0:654:6"
+    "src": "0:958:7"
   },
   "legacyAST": {
     "absolutePath": "/C/Users/merun/Desktop/ovr/ovr-contracts/contracts/TokenBuyInterface.sol",
     "exportedSymbols": {
       "TokenBuyInterface": [
-        5232
+        8688
       ]
     },
-    "id": 5233,
+    "id": 8689,
     "nodeType": "SourceUnit",
     "nodes": [
       {
-        "id": 5182,
+        "id": 8608,
         "literals": [
           "solidity",
           "^",
@@ -752,7 +1170,7 @@
           ".0"
         ],
         "nodeType": "PragmaDirective",
-        "src": "0:23:6"
+        "src": "0:23:7"
       },
       {
         "baseContracts": [],
@@ -760,9 +1178,9 @@
         "contractKind": "contract",
         "documentation": null,
         "fullyImplemented": false,
-        "id": 5232,
+        "id": 8688,
         "linearizedBaseContracts": [
-          5232
+          8688
         ],
         "name": "TokenBuyInterface",
         "nodeType": "ContractDefinition",
@@ -770,23 +1188,23 @@
           {
             "body": null,
             "documentation": null,
-            "id": 5189,
+            "id": 8615,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "setTokenPrices",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 5187,
+              "id": 8613,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 5184,
+                  "id": 8610,
                   "name": "_tokensPerEth",
                   "nodeType": "VariableDeclaration",
-                  "scope": 5189,
-                  "src": "82:21:6",
+                  "scope": 8615,
+                  "src": "82:21:7",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -794,10 +1212,10 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 5183,
+                    "id": 8609,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
-                    "src": "82:7:6",
+                    "src": "82:7:7",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -808,11 +1226,11 @@
                 },
                 {
                   "constant": false,
-                  "id": 5186,
+                  "id": 8612,
                   "name": "_tokensPerUsd",
                   "nodeType": "VariableDeclaration",
-                  "scope": 5189,
-                  "src": "105:21:6",
+                  "scope": 8615,
+                  "src": "105:21:7",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -820,10 +1238,10 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 5185,
+                    "id": 8611,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
-                    "src": "105:7:6",
+                    "src": "105:7:7",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -833,16 +1251,16 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "81:46:6"
+              "src": "81:46:7"
             },
             "returnParameters": {
-              "id": 5188,
+              "id": 8614,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "134:0:6"
+              "src": "134:0:7"
             },
-            "scope": 5232,
-            "src": "58:77:6",
+            "scope": 8688,
+            "src": "58:77:7",
             "stateMutability": "nonpayable",
             "superFunction": null,
             "visibility": "public"
@@ -850,26 +1268,26 @@
           {
             "body": null,
             "documentation": null,
-            "id": 5192,
+            "id": 8618,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "buyTokensWithEth",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 5190,
+              "id": 8616,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "165:2:6"
+              "src": "165:2:7"
             },
             "returnParameters": {
-              "id": 5191,
+              "id": 8617,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "182:0:6"
+              "src": "182:0:7"
             },
-            "scope": 5232,
-            "src": "140:43:6",
+            "scope": 8688,
+            "src": "140:43:7",
             "stateMutability": "payable",
             "superFunction": null,
             "visibility": "public"
@@ -877,23 +1295,23 @@
           {
             "body": null,
             "documentation": null,
-            "id": 5197,
+            "id": 8623,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "buyTokensWithUsdt",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 5195,
+              "id": 8621,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 5194,
+                  "id": 8620,
                   "name": "_tokensToBuy",
                   "nodeType": "VariableDeclaration",
-                  "scope": 5197,
-                  "src": "215:20:6",
+                  "scope": 8623,
+                  "src": "215:20:7",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -901,10 +1319,10 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 5193,
+                    "id": 8619,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
-                    "src": "215:7:6",
+                    "src": "215:7:7",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -914,16 +1332,16 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "214:22:6"
+              "src": "214:22:7"
             },
             "returnParameters": {
-              "id": 5196,
+              "id": 8622,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "243:0:6"
+              "src": "243:0:7"
             },
-            "scope": 5232,
-            "src": "188:56:6",
+            "scope": 8688,
+            "src": "188:56:7",
             "stateMutability": "nonpayable",
             "superFunction": null,
             "visibility": "public"
@@ -931,23 +1349,23 @@
           {
             "body": null,
             "documentation": null,
-            "id": 5202,
+            "id": 8628,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "buyTokensWithUsdc",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 5200,
+              "id": 8626,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 5199,
+                  "id": 8625,
                   "name": "_tokensToBuy",
                   "nodeType": "VariableDeclaration",
-                  "scope": 5202,
-                  "src": "276:20:6",
+                  "scope": 8628,
+                  "src": "276:20:7",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -955,10 +1373,10 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 5198,
+                    "id": 8624,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
-                    "src": "276:7:6",
+                    "src": "276:7:7",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -968,16 +1386,16 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "275:22:6"
+              "src": "275:22:7"
             },
             "returnParameters": {
-              "id": 5201,
+              "id": 8627,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "304:0:6"
+              "src": "304:0:7"
             },
-            "scope": 5232,
-            "src": "249:56:6",
+            "scope": 8688,
+            "src": "249:56:7",
             "stateMutability": "nonpayable",
             "superFunction": null,
             "visibility": "public"
@@ -985,23 +1403,23 @@
           {
             "body": null,
             "documentation": null,
-            "id": 5207,
+            "id": 8633,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "buyTokensWithDai",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 5205,
+              "id": 8631,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 5204,
+                  "id": 8630,
                   "name": "_tokensToBuy",
                   "nodeType": "VariableDeclaration",
-                  "scope": 5207,
-                  "src": "336:20:6",
+                  "scope": 8633,
+                  "src": "336:20:7",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -1009,10 +1427,10 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 5203,
+                    "id": 8629,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
-                    "src": "336:7:6",
+                    "src": "336:7:7",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -1022,16 +1440,16 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "335:22:6"
+              "src": "335:22:7"
             },
             "returnParameters": {
-              "id": 5206,
+              "id": 8632,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "364:0:6"
+              "src": "364:0:7"
             },
-            "scope": 5232,
-            "src": "310:55:6",
+            "scope": 8688,
+            "src": "310:55:7",
             "stateMutability": "nonpayable",
             "superFunction": null,
             "visibility": "public"
@@ -1039,23 +1457,23 @@
           {
             "body": null,
             "documentation": null,
-            "id": 5214,
+            "id": 8640,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "extractTokens",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 5212,
+              "id": 8638,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 5209,
+                  "id": 8635,
                   "name": "_tokenToExtract",
                   "nodeType": "VariableDeclaration",
-                  "scope": 5214,
-                  "src": "393:23:6",
+                  "scope": 8640,
+                  "src": "393:23:7",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -1063,10 +1481,10 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 5208,
+                    "id": 8634,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
-                    "src": "393:7:6",
+                    "src": "393:7:7",
                     "stateMutability": "nonpayable",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
@@ -1078,11 +1496,11 @@
                 },
                 {
                   "constant": false,
-                  "id": 5211,
+                  "id": 8637,
                   "name": "_amount",
                   "nodeType": "VariableDeclaration",
-                  "scope": 5214,
-                  "src": "418:15:6",
+                  "scope": 8640,
+                  "src": "418:15:7",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -1090,10 +1508,10 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 5210,
+                    "id": 8636,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
-                    "src": "418:7:6",
+                    "src": "418:7:7",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -1103,16 +1521,16 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "392:42:6"
+              "src": "392:42:7"
             },
             "returnParameters": {
-              "id": 5213,
+              "id": 8639,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "441:0:6"
+              "src": "441:0:7"
             },
-            "scope": 5232,
-            "src": "370:72:6",
+            "scope": 8688,
+            "src": "370:72:7",
             "stateMutability": "nonpayable",
             "superFunction": null,
             "visibility": "public"
@@ -1120,26 +1538,26 @@
           {
             "body": null,
             "documentation": null,
-            "id": 5217,
+            "id": 8643,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "extractEth",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 5215,
+              "id": 8641,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "466:2:6"
+              "src": "466:2:7"
             },
             "returnParameters": {
-              "id": 5216,
+              "id": 8642,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "475:0:6"
+              "src": "475:0:7"
             },
-            "scope": 5232,
-            "src": "447:29:6",
+            "scope": 8688,
+            "src": "447:29:7",
             "stateMutability": "nonpayable",
             "superFunction": null,
             "visibility": "public"
@@ -1147,23 +1565,23 @@
           {
             "body": null,
             "documentation": null,
-            "id": 5224,
+            "id": 8650,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "sendTokensCreditCard",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 5222,
+              "id": 8648,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 5219,
+                  "id": 8645,
                   "name": "_to",
                   "nodeType": "VariableDeclaration",
-                  "scope": 5224,
-                  "src": "511:11:6",
+                  "scope": 8650,
+                  "src": "511:11:7",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -1171,10 +1589,10 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 5218,
+                    "id": 8644,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
-                    "src": "511:7:6",
+                    "src": "511:7:7",
                     "stateMutability": "nonpayable",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
@@ -1186,11 +1604,11 @@
                 },
                 {
                   "constant": false,
-                  "id": 5221,
+                  "id": 8647,
                   "name": "_amount",
                   "nodeType": "VariableDeclaration",
-                  "scope": 5224,
-                  "src": "524:15:6",
+                  "scope": 8650,
+                  "src": "524:15:7",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -1198,10 +1616,10 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 5220,
+                    "id": 8646,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
-                    "src": "524:7:6",
+                    "src": "524:7:7",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -1211,16 +1629,16 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "510:30:6"
+              "src": "510:30:7"
             },
             "returnParameters": {
-              "id": 5223,
+              "id": 8649,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "547:0:6"
+              "src": "547:0:7"
             },
-            "scope": 5232,
-            "src": "481:67:6",
+            "scope": 8688,
+            "src": "481:67:7",
             "stateMutability": "nonpayable",
             "superFunction": null,
             "visibility": "public"
@@ -1228,23 +1646,23 @@
           {
             "body": null,
             "documentation": null,
-            "id": 5231,
+            "id": 8657,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "calculateHowManyTokensYouCanBuyWithEth",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 5227,
+              "id": 8653,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 5226,
+                  "id": 8652,
                   "name": "_tokensToBuy",
                   "nodeType": "VariableDeclaration",
-                  "scope": 5231,
-                  "src": "601:20:6",
+                  "scope": 8657,
+                  "src": "601:20:7",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -1252,10 +1670,10 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 5225,
+                    "id": 8651,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
-                    "src": "601:7:6",
+                    "src": "601:7:7",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -1265,19 +1683,19 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "600:22:6"
+              "src": "600:22:7"
             },
             "returnParameters": {
-              "id": 5230,
+              "id": 8656,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 5229,
+                  "id": 8655,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 5231,
-                  "src": "643:7:6",
+                  "scope": 8657,
+                  "src": "643:7:7",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -1285,10 +1703,10 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 5228,
+                    "id": 8654,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
-                    "src": "643:7:6",
+                    "src": "643:7:7",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -1298,20 +1716,348 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "642:9:6"
+              "src": "642:9:7"
             },
-            "scope": 5232,
-            "src": "553:99:6",
+            "scope": 8688,
+            "src": "553:99:7",
             "stateMutability": "view",
+            "superFunction": null,
+            "visibility": "public"
+          },
+          {
+            "body": null,
+            "documentation": null,
+            "id": 8662,
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "ovrToken",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 8658,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "674:2:7"
+            },
+            "returnParameters": {
+              "id": 8661,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 8660,
+                  "name": "",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 8662,
+                  "src": "692:7:7",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 8659,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "692:7:7",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "691:9:7"
+            },
+            "scope": 8688,
+            "src": "657:44:7",
+            "stateMutability": "nonpayable",
+            "superFunction": null,
+            "visibility": "public"
+          },
+          {
+            "body": null,
+            "documentation": null,
+            "id": 8667,
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "tokensPerEth",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 8663,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "727:2:7"
+            },
+            "returnParameters": {
+              "id": 8666,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 8665,
+                  "name": "",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 8667,
+                  "src": "745:7:7",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 8664,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "745:7:7",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "744:9:7"
+            },
+            "scope": 8688,
+            "src": "706:48:7",
+            "stateMutability": "nonpayable",
+            "superFunction": null,
+            "visibility": "public"
+          },
+          {
+            "body": null,
+            "documentation": null,
+            "id": 8672,
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "tokensPerUsd",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 8668,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "780:2:7"
+            },
+            "returnParameters": {
+              "id": 8671,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 8670,
+                  "name": "",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 8672,
+                  "src": "798:7:7",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 8669,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "798:7:7",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "797:9:7"
+            },
+            "scope": 8688,
+            "src": "759:48:7",
+            "stateMutability": "nonpayable",
+            "superFunction": null,
+            "visibility": "public"
+          },
+          {
+            "body": null,
+            "documentation": null,
+            "id": 8677,
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "daiToken",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 8673,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "829:2:7"
+            },
+            "returnParameters": {
+              "id": 8676,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 8675,
+                  "name": "",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 8677,
+                  "src": "847:7:7",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 8674,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "847:7:7",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "846:9:7"
+            },
+            "scope": 8688,
+            "src": "812:44:7",
+            "stateMutability": "nonpayable",
+            "superFunction": null,
+            "visibility": "public"
+          },
+          {
+            "body": null,
+            "documentation": null,
+            "id": 8682,
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "usdtToken",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 8678,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "879:2:7"
+            },
+            "returnParameters": {
+              "id": 8681,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 8680,
+                  "name": "",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 8682,
+                  "src": "897:7:7",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 8679,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "897:7:7",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "896:9:7"
+            },
+            "scope": 8688,
+            "src": "861:45:7",
+            "stateMutability": "nonpayable",
+            "superFunction": null,
+            "visibility": "public"
+          },
+          {
+            "body": null,
+            "documentation": null,
+            "id": 8687,
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "usdcToken",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 8683,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "929:2:7"
+            },
+            "returnParameters": {
+              "id": 8686,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 8685,
+                  "name": "",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 8687,
+                  "src": "947:7:7",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 8684,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "947:7:7",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "946:9:7"
+            },
+            "scope": 8688,
+            "src": "911:45:7",
+            "stateMutability": "nonpayable",
             "superFunction": null,
             "visibility": "public"
           }
         ],
-        "scope": 5233,
-        "src": "25:629:6"
+        "scope": 8689,
+        "src": "25:933:7"
       }
     ],
-    "src": "0:654:6"
+    "src": "0:958:7"
   },
   "compiler": {
     "name": "solc",
@@ -1319,7 +2065,7 @@
   },
   "networks": {},
   "schemaVersion": "3.1.0",
-  "updatedAt": "2020-06-12T13:05:35.732Z",
+  "updatedAt": "2020-07-01T15:01:14.274Z",
   "devdoc": {
     "methods": {}
   },

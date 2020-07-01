@@ -38,6 +38,7 @@ module.exports = async (deployer, network) => {
 					ICO,
 					ovrToken.address,
 					ovrLand.address,
+					tokenBuy.address,
 					String(10e18) // 10 ovr as the initial land bid
 				)
 			})
@@ -94,6 +95,7 @@ module.exports = async (deployer, network) => {
 					ICO,
 					ovrToken.address,
 					ovrLand.address,
+					tokenBuy.address,
 					String(10e18) // 10 ovr as the initial land bid
 				)
 			})
@@ -108,6 +110,7 @@ module.exports = async (deployer, network) => {
 				await ovrLand.addMinter(ico.address) // Make the ICO contract a ERC721 minter
 				console.log('Setting auction duration to 10 minutes...')
 				await ico.setAuctionLandDuration(600)
+				
 				console.log('DAI', deployed[0])
 				console.log('Usdc', deployed[1])
 				console.log('Tether', deployed[2])
