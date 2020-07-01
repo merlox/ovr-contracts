@@ -88,6 +88,8 @@ contract ICO is Ownable, Pausable, IERC721Receiver {
         LandOfferState state;
     }
 
+    event AuctionStarted(address indexed lastBidder, uint256 indexed landToBuy, uint256 paid, uint256 timestamp);
+    event AuctionBid(address indexed newBidder, address indexed oldBidder, uint256 indexed landToBuy, uint256 paid, uint256 timestamp);
     event WonLand(address indexed winner, uint256 indexed landId, uint256 price);
     event LandSaleStarted(address indexed owner, uint256 indexed landId, uint256 price);
     event CashbackRedeemed(uint256 indexed landId, address indexed receiver, uint256 amount, uint256 timestamp);
@@ -98,12 +100,12 @@ contract ICO is Ownable, Pausable, IERC721Receiver {
     event LandOfferDeclined(uint256 indexed landOfferId, uint256 indexed landId);
     event LandOfferCancelled(uint256 indexed offerId);
 
-    address public ovrToken;
     address public ovrLand;
     address public tokenBuy;
-    address public dai;
-    address public usdt;
-    address public usdc;
+    IERC20 public ovrToken;
+    IERC20 public dai;
+    IERC20 public usdt;
+    IERC20 public usdc;
     uint256 public tokensPerUsd;
     uint256 public tokensPerEth;
 
@@ -136,25 +138,92 @@ contract ICO is Ownable, Pausable, IERC721Receiver {
     // There can be multiple instances of the same id inside so filter them in js
     uint256[] public landsOnSaleOrSold;
 
-    modifier onlyApproved {
-        require(msg.sender == approved);
-        _;
-    }
-
     constructor(address _ovrToken, address _ovrLand, address _tokenBuy, uint256 _initialLandBid) public {
         require(_ovrToken != address(0), "The OVR ERC20 token address can't be empty");
         require(_ovrLand != address(0), "The OVR land ERC721 token address can't be empty");
         require(_tokenBuy != address(0), "The TokenBuy contract address can't be empty");
         require(_initialLandBid != 0, "The initial land bid can't be zero");
-        ovrToken = _ovrToken;
-        ovrLand = _ovrLand;
-        tokenBuy = _tokenBuy;
+
         initialLandBid = _initialLandBid;
         contractCreationDate = now;
+        tokenBuy = _tokenBuy;
+        ovrLand = _ovrLand;
+        ovrToken = IERC20(_ovrToken);
+        dai = IERC20(TokenBuyInterface(tokenBuy).daiToken());
+        usdt = IERC20(TokenBuyInterface(tokenBuy).usdtToken());
+        usdc = IERC20(TokenBuyInterface(tokenBuy).usdcToken());
+        updateTokenBuyValues();
     }
 
-    function setApproved(address _approved) public onlyOwner {
-        approved = _approved;
+    function updateTokenBuyValues() public {
+        tokensPerUsd = TokenBuyInterface(tokenBuy).tokensPerUsd();
+        tokensPerEth = TokenBuyInterface(tokenBuy).tokensPerEth();
+    }
+
+    function participate (uint256 _token, uint256 _bid, uint256 _landId) public payable whenNotPaused {
+        require(checkEpoch(_landId), "This land isn't available at the current epoch");
+        require(_bid > 0 || msg.value > 0, "The bid can't be zero");
+        Land memory land = lands[_landId];
+        require(now.sub(land.lastBidTimestamp) < auctionLandDuration, 'This land auction has ended');
+
+        updateTokenBuyValues();
+
+        if (land.state == AuctionState.ACTIVE) {
+            participateActiveAuction(_token, _bid, _landId);
+        } else if (land.state == AuctionState.NOT_STARTED) {
+            participateNewAuction(_token, _bid, _landId);
+        } else {
+            revert('The auction has ended for this land');
+        }
+    }
+
+    function participateActiveAuction (uint256 _token, uint256 _bid, uint256 _landId) public payable whenNotPaused {
+        Land storage land = lands[_landId];
+        if (msg.value > 0) {
+            _bid = msg.value.mul(tokensPerEth);
+        }
+        require(_bid >= land.paid.mul(2), 'Your bid must be equal or larger than double the previous one');
+
+        // Return previous bidder's tokens
+        if (land.paidWith == 0) {
+            land.owner.transfer(land.paid.div(tokensPerEth));
+        } else if (land.paidWith == 1) {
+            dai.transfer(land.owner, land.paid.div(tokensPerUsd));
+        } else if (land.paidWith == 2) {
+            usdt.transfer(land.owner, land.paid.div(tokensPerUsd));
+        } else if (land.paidWith == 3) {
+            usdc.transfer(land.owner, land.paid.div(tokensPerUsd));
+        } else if (land.paidWith == 4) {
+            ovrToken.transfer(land.owner, land.paid);
+        }
+
+        land.owner = msg.sender;
+        land.paid = _bid;
+        land.lastUpdateTimestamp = now;
+        land.paidWith = _token;
+
+        emit AuctionBid(msg.sender, land.owner, _landId, _bid, now);
+    }
+
+    function participateNewAuction (uint256 _token, uint256 _bid, uint256 _landId) public payable whenNotPaused {
+        if (msg.value > 0) {
+            _bid = msg.value.mul(tokensPerEth);
+        }
+
+        require(_bid >= initialLandBid, 'The bid must be larger or equal the initial minimum');
+
+        lands[_landId] = Land(msg.sender, _landId, _bid, now, ICO.AuctionState.ACTIVE, 0, false, 0, false, false, now, _token);
+        if (_token == 1) {
+            dai.transferFrom(msg.sender, address(this), _bid.div(tokensPerUsd));
+        } else if (_token == 2) {
+            usdt.transferFrom(msg.sender, address(this), _bid.div(tokensPerUsd));
+        } else if (_token == 3) {
+            usdc.transferFrom(msg.sender, address(this), _bid.div(tokensPerUsd));
+        } else if (_token == 4) {
+            ovrToken.transferFrom(msg.sender, address(this), _bid);
+        }
+        activeLands.push(_landId);
+        emit AuctionStarted(msg.sender, _landId, _bid, now);
     }
 
     /// Sets the duration of each land auction
@@ -335,28 +404,6 @@ contract ICO is Ownable, Pausable, IERC721Receiver {
         }
     }
 
-    /// To update the lands value array
-    function setLands(
-        address payable owner, 
-        uint256 landToBuy, 
-        uint256 paid, 
-        uint256 lastBidTimestamp, 
-        AuctionState state, 
-        uint256 cashbackAmount, 
-        bool isCashbackRedeemed, 
-        uint256 sellPrice, 
-        bool onSale, 
-        bool hasBeenRedeemed, 
-        uint256 lastUpdateTimestamp, 
-        uint256 paidWith
-    ) public onlyApproved {
-        lands[landToBuy] = Land(owner, landToBuy, paid, lastBidTimestamp, state, cashbackAmount, isCashbackRedeemed, sellPrice, onSale, hasBeenRedeemed, lastUpdateTimestamp, paidWith);
-    }
-
-    function pushActiveLand(uint256 _landId) public onlyApproved {
-        activeLands.push(_landId);
-    }
-
     /// Returns an array with the the landOfferIds for a given land id
     /// you can check each independently using the array ownedLands
     function checkMyLandOffers(uint256 _landId) public view returns(uint256[] memory) {
@@ -440,95 +487,5 @@ contract ICO is Ownable, Pausable, IERC721Receiver {
         // Both return values work
         return this.onERC721Received.selector;
         // return bytes4(keccak256("onERC721Received(address,address,uint256,bytes)"));
-    }
-}
-
-
-contract ICOParticipate is Pausable {
-    using SafeMath for uint256;
-
-    event AuctionStarted(address indexed lastBidder, uint256 indexed landToBuy, uint256 paid, uint256 timestamp);
-    event AuctionBid(address indexed newBidder, address indexed oldBidder, uint256 indexed landToBuy, uint256 paid, uint256 timestamp);
-
-    address public ovrLand;
-    address public tokenBuy;
-    IERC20 public ovrToken;
-    IERC20 public dai;
-    IERC20 public usdt;
-    IERC20 public usdc;
-    uint256 public tokensPerUsd;
-    uint256 public tokensPerEth;
-    ICO public ico;
-
-    constructor (address _ico) public {
-        ico = ICO(_ico);
-        ovrLand = ico.ovrLand();
-        tokenBuy = ico.tokenBuy();
-        ovrToken = IERC20(ico.ovrToken());
-        dai = IERC20(TokenBuyInterface(tokenBuy).daiToken());
-        usdt = IERC20(TokenBuyInterface(tokenBuy).usdtToken());
-        usdc = IERC20(TokenBuyInterface(tokenBuy).usdcToken());
-        updateTokenBuyValues();
-    }
-
-    function updateTokenBuyValues() public {
-        tokensPerUsd = TokenBuyInterface(tokenBuy).tokensPerUsd();
-        tokensPerEth = TokenBuyInterface(tokenBuy).tokensPerEth();
-    }
-
-    function participate (uint256 _token, uint256 _bid, uint256 _landId) public payable whenNotPaused {
-        require(ico.checkEpoch(_landId), "This land isn't available at the current epoch");
-        require(_bid > 0 || msg.value > 0, "The bid can't be zero");
-        (address payable owner,,, uint256 lastBidTimestamp, ICO.AuctionState state,,,,,,,) = ico.lands(_landId);
-        require(now.sub(lastBidTimestamp) < ico.auctionLandDuration(), 'This land auction has ended');
-
-        updateTokenBuyValues();
-
-        if (state == ICO.AuctionState.ACTIVE) {
-            participateActiveAuction(_token, _bid, _landId);
-        } else if (state == ICO.AuctionState.NOT_STARTED) {
-            participateNewAuction(_token, _bid, _landId);
-        } else {
-            revert('The auction has ended for this land');
-        }
-    }
-
-    function participateActiveAuction (uint256 _token, uint256 _bid, uint256 _landId) public payable whenNotPaused {
-        (address payable oldBidder, uint256 landToBuy, uint256 oldBid, uint256 lastBidTimestamp, ICO.AuctionState state, uint256 cashbackAmount, bool isCashbackRedeemed, uint256 sellPrice, bool onSale, bool hasBeenRedeemed, uint256 lastUpdateTimestamp, uint256 paidWith) = ico.lands(_landId);
-
-        require(_bid >= oldBid.mul(2), 'Your bid must be equal or larger than double the previous one');
-
-        // Return previous bidder's tokens
-        if (paidWith == 0) {
-            oldBidder.transfer(oldBid.div(tokensPerEth));
-        } else if (paidWith == 1) {
-            dai.transfer(oldBidder, oldBid.div(tokensPerUsd));
-        } else if (paidWith == 2) {
-            usdt.transfer(oldBidder, oldBid.div(tokensPerUsd));
-        } else if (paidWith == 3) {
-            usdc.transfer(oldBidder, oldBid.div(tokensPerUsd));
-        } else if (paidWith == 4) {
-            ovrToken.transfer(oldBidder, oldBid);
-        }
-
-        ico.setLands(msg.sender, landToBuy, _bid, now, state, cashbackAmount, isCashbackRedeemed, sellPrice, onSale, hasBeenRedeemed, lastUpdateTimestamp, _token);
-        emit AuctionBid(msg.sender, oldBidder, _landId, _bid, now);
-    }
-
-    function participateNewAuction (uint256 _token, uint256 _bid, uint256 _landId) public payable whenNotPaused {
-        require(_bid >= ico.initialLandBid(), 'The bid must be larger or equal the initial minimum');
-
-        ico.setLands(msg.sender, _landId, _bid, now, ICO.AuctionState.ACTIVE, 0, false, 0, false, false, now, _token);
-        if (_token == 1) {
-            dai.transferFrom(msg.sender, address(this), _bid.div(tokensPerUsd));
-        } else if (_token == 2) {
-            usdt.transferFrom(msg.sender, address(this), _bid.div(tokensPerUsd));
-        } else if (_token == 3) {
-            usdc.transferFrom(msg.sender, address(this), _bid.div(tokensPerUsd));
-        } else if (_token == 4) {
-            ovrToken.transferFrom(msg.sender, address(this), _bid);
-        }
-        ico.pushActiveLand(_landId);
-        emit AuctionStarted(msg.sender, _landId, _bid, now);
     }
 }
