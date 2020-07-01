@@ -3,9 +3,11 @@ const OVRToken = artifacts.require('OVRToken')
 const TokenBuy = artifacts.require('TokenBuy')
 const ERC20 = artifacts.require('ERC20')
 const ICO = artifacts.require('ICO')
+const ICOParticipate = artifacts.require('ICOParticipate')
 let ovrToken
 let ovrLand
 let tokenBuy
+let ico
 let deployed = []
 const perETH = 2000
 const perUSD = 10
@@ -42,12 +44,21 @@ module.exports = async (deployer, network) => {
 					String(10e18) // 10 ovr as the initial land bid
 				)
 			})
-			.then(async ico => {
+			.then(async _ico => {
+				ico = _ico
+				return deployer.deploy(
+					ICOParticipate,
+					ico.address,
+				)
+			})
+			.then(async _icoParticipate => {
 				const accounts = await web3.eth.getAccounts()
 				const amount = await ovrToken.balanceOf(accounts[0])
 				await ovrToken.transfer(tokenBuy.address, amount)
 				await tokenBuy.setTokenPrices(perETH, perUSD)
 				await ovrLand.addMinter(ico.address) // Make the ICO contract a ERC721 minter
+				console.log('Setting up approved in the ICO contract...')
+				await ico.setApproved(_icoParticipate.address)
 
 				console.log('DAI', '0x6B175474E89094C44Da98b954EedeAC495271d0F')
 				console.log('Usdc', '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48')
@@ -56,6 +67,7 @@ module.exports = async (deployer, network) => {
 				console.log('Ovr ERC20', ovrToken.address)
 				console.log('TokenBuy', tokenBuy.address)
 				console.log('ICO', ico.address)
+				console.log('ICO Participate', _icoParticipate.address)
 			})
 	} else {
 		deployer
@@ -99,7 +111,14 @@ module.exports = async (deployer, network) => {
 					String(10e18) // 10 ovr as the initial land bid
 				)
 			})
-			.then(async ico => {
+			.then(async _ico => {
+				ico = _ico
+				return deployer.deploy(
+					ICOParticipate,
+					ico.address,
+				)
+			})
+			.then(async _icoParticipate => {
 				const accounts = await web3.eth.getAccounts()
 				const amount = await ovrToken.balanceOf(accounts[0])
 				console.log('Transfering over tokens to the TokenBuy contract...')
@@ -110,6 +129,8 @@ module.exports = async (deployer, network) => {
 				await ovrLand.addMinter(ico.address) // Make the ICO contract a ERC721 minter
 				console.log('Setting auction duration to 10 minutes...')
 				await ico.setAuctionLandDuration(600)
+				console.log('Setting up approved in the ICO contract...')
+				await ico.setApproved(_icoParticipate.address)
 				
 				console.log('DAI', deployed[0])
 				console.log('Usdc', deployed[1])
@@ -118,6 +139,7 @@ module.exports = async (deployer, network) => {
 				console.log('Ovr ERC20', deployed[4])
 				console.log('TokenBuy', deployed[5])
 				console.log('ICO', ico.address)
+				console.log('ICO Participate', _icoParticipate.address)
 			})
 	}
 }
