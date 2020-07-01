@@ -108,9 +108,6 @@ contract ICO is Ownable, Pausable, IERC721Receiver {
     IERC20 public usdc;
     uint256 public tokensPerUsd;
     uint256 public tokensPerEth;
-
-    address public approved;
-
     uint256 public initialLandBid;
     uint256 public lastLandOfferId; // A counter for setting up ids
     // When the contract was created required for calculating cashbacks
