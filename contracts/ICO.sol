@@ -473,12 +473,17 @@ contract ICOParticipate is Pausable {
     function participate (uint256 _token, uint256 _bid, uint256 _landId) public payable whenNotPaused {
         updateTokenBuyValues();
         if (msg.value > 0) {
-            _bid = _bid.mul(tokensPerEth);
+            _bid = msg.value.mul(tokensPerEth);
         }
 
         require(ico.checkEpoch(_landId), "This land isn't available at the current epoch");
         require(_bid > 0 || msg.value > 0, "The bid can't be zero");
         (,,, uint256 lastBidTimestamp, ICO.AuctionState state,,,,,,,) = ico.lands(_landId);
+
+        if (lastBidTimestamp == 0 || state == ICO.AuctionState.NOT_STARTED) {
+            require(_bid >= ico.initialLandBid(), 'The bid must be larger or equal the initial minimum');
+            participateNewAuction(_token, _bid, _landId);
+        }
 
         // If it started or ended
         if (state == ICO.AuctionState.ENDED) {
@@ -486,9 +491,6 @@ contract ICOParticipate is Pausable {
         } else if (state == ICO.AuctionState.ACTIVE) {
             require(now.sub(lastBidTimestamp) < ico.auctionLandDuration(), 'This land auction has ended');
             participateActiveAuction(_token, _bid, _landId);
-        } else if (state == ICO.AuctionState.NOT_STARTED) {
-            require(_bid >= ico.initialLandBid(), 'The bid must be larger or equal the initial minimum');
-            participateNewAuction(_token, _bid, _landId);
         } else {
             revert('The auction has ended for this land');
         }
