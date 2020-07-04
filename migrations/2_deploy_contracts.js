@@ -140,6 +140,7 @@ module.exports = async (deployer, network) => {
 				console.log(`export const tokenBuyAddress = '${deployed[5]}';`)
 				console.log(`export const icoAddress = '${ico.address}';`)
 				console.log(`export const icoParticipateAddress = '${_icoParticipate.address}';`)
+				console.log('REMEMBER to update the ovr-server with the new TokenBuy address and the ABIs in the frontend')
 			})
 	}
 }

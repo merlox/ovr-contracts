@@ -437,7 +437,7 @@ contract ICO is Ownable, Pausable, IERC721Receiver {
 }
 
 
-contract ICOParticipate is Pausable {
+contract ICOParticipate is Ownable, Pausable {
     using SafeMath for uint256;
 
     event AuctionStarted(address indexed lastBidder, uint256 indexed landToBuy, uint256 paid, uint256 timestamp);
@@ -492,7 +492,6 @@ contract ICOParticipate is Pausable {
         }
     }
 
-
     function participateActiveAuction (uint256 _token, uint256 _bid, uint256 _landId) internal whenNotPaused {
         (address payable oldBidder,, uint256 oldBid,, ICO.AuctionState state,,,,,,, uint256 paidWith) = ico.lands(_landId);
         require(_bid >= oldBid.mul(2), 'Your bid must be equal or larger than double the previous one');
@@ -527,5 +526,14 @@ contract ICOParticipate is Pausable {
         }
         ico.pushActiveLand(_landId);
         emit AuctionStarted(msg.sender, _landId, _bid, now);
+    }
+
+    /// To extract the tokens that may have been sent to this contract by accident
+    function extractTokens(address _tokenToExtract, uint256 _amount) public onlyOwner whenNotPaused {
+        IERC20(_tokenToExtract).transfer(owner, _amount);
+    }
+
+    function extractEth() public onlyOwner whenNotPaused {
+        owner.transfer(address(this).balance);
     }
 }
