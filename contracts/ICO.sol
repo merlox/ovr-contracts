@@ -469,32 +469,51 @@ contract ICOParticipate is Pausable {
         tokensPerEth = TokenBuyInterface(tokenBuy).tokensPerEth();
     }
 
-    // _token 0 = ETH, 1 = dai, 2 = tether, 3 = usdc, 4 = OVR
+
+    
+event MyTest(string indexed, ICO.AuctionState indexed, ICO.AuctionState, bool indexed);
+
+function test(uint256 _landId) public {
+    (,,, uint256 lastBidTimestamp, ICO.AuctionState state,,,,,,,) = ico.lands(_landId);
+    emit MyTest("a", state, ICO.AuctionState.NOT_STARTED, state == ICO.AuctionState.NOT_STARTED);
+}
+    
     function participate (uint256 _token, uint256 _bid, uint256 _landId) public payable whenNotPaused {
-        updateTokenBuyValues();
-        if (msg.value > 0) {
-            _bid = msg.value.mul(tokensPerEth);
-        }
+        // updateTokenBuyValues();
+        // if (msg.value > 0) {
+        //     _bid = msg.value.mul(tokensPerEth);
+        // }
 
-        require(ico.checkEpoch(_landId), "This land isn't available at the current epoch");
-        require(_bid > 0 || msg.value > 0, "The bid can't be zero");
+        // require(ico.checkEpoch(_landId), "This land isn't available at the current epoch");
+        // require(_bid > 0 || msg.value > 0, "The bid can't be zero");
         (,,, uint256 lastBidTimestamp, ICO.AuctionState state,,,,,,,) = ico.lands(_landId);
-
-        if (lastBidTimestamp == 0 || state == ICO.AuctionState.NOT_STARTED) {
+        emit MyTest("AAAA", state, ICO.AuctionState.ENDED, state == ICO.AuctionState.ENDED);
+        /*if (lastBidTimestamp == 0 || state == ICO.AuctionState.NOT_STARTED) {
             require(_bid >= ico.initialLandBid(), 'The bid must be larger or equal the initial minimum');
             participateNewAuction(_token, _bid, _landId);
         }
 
-        // If it started or ended
+        
         if (state == ICO.AuctionState.ENDED) {
-            revert('The auction has ended for this land');
+            revert('The auction has ended for this land 1');
         } else if (state == ICO.AuctionState.ACTIVE) {
             require(now.sub(lastBidTimestamp) < ico.auctionLandDuration(), 'This land auction has ended');
             participateActiveAuction(_token, _bid, _landId);
         } else {
-            revert('The auction has ended for this land');
+            revert('The auction has ended for this land 2');
+        }*/
+        
+        if (state == ICO.AuctionState.NOT_STARTED) {
+            emit MyTest("NOTSTARTED", state, ICO.AuctionState.NOT_STARTED, state == ICO.AuctionState.NOT_STARTED);
+        } else if (state == ICO.AuctionState.ACTIVE) {
+            emit MyTest("ACTIVE", state, ICO.AuctionState.ACTIVE, state == ICO.AuctionState.ACTIVE);
+        } else if (state == ICO.AuctionState.ENDED) {
+            emit MyTest("ENDED", state, ICO.AuctionState.ENDED, state == ICO.AuctionState.ENDED);
+        } else {
+            emit MyTest("OTHER", state, ICO.AuctionState.ENDED, state == ICO.AuctionState.ENDED);
         }
     }
+
 
     function participateActiveAuction (uint256 _token, uint256 _bid, uint256 _landId) internal whenNotPaused {
         (address payable oldBidder,, uint256 oldBid,, ICO.AuctionState state,,,,,,, uint256 paidWith) = ico.lands(_landId);
