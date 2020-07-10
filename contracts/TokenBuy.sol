@@ -3,6 +3,7 @@ pragma solidity ^0.5.0;
 import '@openzeppelin/contracts/math/SafeMath.sol';
 import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import '@openzeppelin/contracts/lifecycle/Pausable.sol';
+import './usingProvable.sol';
 
 contract Ownable {
     address payable public owner;
@@ -32,7 +33,7 @@ contract Ownable {
 /// No need to use oracles, the price will be fixed and there will be a table for:
 ///  1 ETH -> X tokens
 ///  1 USD -> X tokens (for those 3 ERC20 tokens since they are stablecoins)
-contract TokenBuy is Ownable, Pausable {
+contract TokenBuy is Ownable, Pausable, usingProvable {
     using SafeMath for uint256;
     address public daiToken;
     address public usdcToken;
@@ -43,8 +44,12 @@ contract TokenBuy is Ownable, Pausable {
     uint256 public tokensPerEth;
     // You get X tokens for 1 USD where X is this variable
     uint256 public tokensPerUsd;
+    uint256 public ethPrice;
+
+    mapping(bytes32=>bool) validIds;
 
     event TokenPurchase(address from, uint256 ovrPurchased, uint256 coinsPaid, string coinUsed);
+    event PriceUpdated(uint256 date, uint256 price);
 
     modifier pricesMustBeSet {
         require(tokensPerEth > 0, "The price per ETH must be set");
@@ -56,7 +61,7 @@ contract TokenBuy is Ownable, Pausable {
     /// daiToken = 0x6B175474E89094C44Da98b954EedeAC495271d0F;
     /// usdcToken = 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48;
     /// usdtToken = 0xdAC17F958D2ee523a2206206994597C13D831ec7;
-    constructor (address _ovrToken, address _daiToken, address _usdcToken, address _usdtToken) public {
+    constructor (address _ovrToken, address _daiToken, address _usdcToken, address _usdtToken) public payable {
         require(_ovrToken != address(0), "The OVR token address can't be empty");
         require(_daiToken != address(0), "The DAI token address can't be empty");
         require(_usdcToken != address(0), "The USDC token address can't be empty");
@@ -65,6 +70,25 @@ contract TokenBuy is Ownable, Pausable {
         usdcToken = _usdcToken;
         usdtToken = _usdtToken;
         ovrToken = _ovrToken;
+
+        updatePrice();
+    }
+
+    function updatePrice() public payable {
+        bytes32 queryId = provable_query(60, "URL", "json(https://api.pro.coinbase.com/products/ETH-USD/ticker).price", 500000);
+        validIds[queryId] = true;
+    }
+
+    /// Oraclize callback
+    function __callback(bytes32 myid, string memory result) public {
+        if (!validIds[myid]) revert();
+        if (msg.sender != provable_cbAddress()) revert();
+        ethPrice = safeParseInt(result);
+        emit PriceUpdated(now, ethPrice);
+
+        // Call it every day
+        bytes32 queryId = provable_query(60, "URL", "json(https://api.pro.coinbase.com/products/ETH-USD/ticker).price", 500000);
+        validIds[queryId] = true;
     }
 
     /// To set the price per token for the given currency used as payment
