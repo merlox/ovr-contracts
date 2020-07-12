@@ -85,7 +85,7 @@ contract TokenBuy is Ownable, Pausable, usingProvable {
         emit PriceUpdated(now, ethPrice);
 
         // Call it every day
-        bytes32 queryId = provable_query(60, "URL", "json(https://api.pro.coinbase.com/products/ETH-USD/ticker).price", 500000);
+        bytes32 queryId = provable_query(86400, "URL", "json(https://api.pro.coinbase.com/products/ETH-USD/ticker).price", 500000);
         validIds[queryId] = true;
     }
 
