@@ -9,8 +9,6 @@ let ovrLand
 let tokenBuy
 let ico
 let deployed = []
-const perETH = 2000
-const perUSD = 10
 
 /// Real token addresses
 /// daiToken = 0x6B175474E89094C44Da98b954EedeAC495271d0F;
@@ -31,7 +29,10 @@ module.exports = async (deployer, network) => {
 					ovrToken.address,
 					'0x6B175474E89094C44Da98b954EedeAC495271d0F',
 					'0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
-					'0xdAC17F958D2ee523a2206206994597C13D831ec7'
+					'0xdAC17F958D2ee523a2206206994597C13D831ec7',
+					{
+						value: String(0.1e18) // .1 ether for the oracle
+					}
 				)
 			})
 			.then(_tokenBuy => {
@@ -55,7 +56,6 @@ module.exports = async (deployer, network) => {
 				const accounts = await web3.eth.getAccounts()
 				const amount = await ovrToken.balanceOf(accounts[0])
 				await ovrToken.transfer(tokenBuy.address, amount)
-				await tokenBuy.setTokenPrices(perETH, perUSD)
 				await ovrLand.addMinter(ico.address) // Make the ICO contract a ERC721 minter
 				console.log('Setting up approved in the ICO contract...')
 				await ico.setApproved(_icoParticipate.address)
@@ -97,7 +97,10 @@ module.exports = async (deployer, network) => {
 					ovrToken.address,
 					deployed[0],
 					deployed[1],
-					deployed[2]
+					deployed[2],
+					{
+						value: web3.utils.toWei("0.1") // .1 ether for the oracle
+					}
 				)
 			})
 			.then(_tokenBuy => {
@@ -123,8 +126,6 @@ module.exports = async (deployer, network) => {
 				const amount = await ovrToken.balanceOf(accounts[0])
 				console.log('Transfering over tokens to the TokenBuy contract...')
 				await ovrToken.transfer(tokenBuy.address, amount)
-				console.log('Setting token prices in TokenBuy...')
-				await tokenBuy.setTokenPrices(perETH, perUSD)
 				console.log('Setting the ICO contract as the miner...')
 				await ovrLand.addMinter(ico.address) // Make the ICO contract a ERC721 minter
 				console.log('Setting auction duration to 10 minutes...')

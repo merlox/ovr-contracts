@@ -9,11 +9,10 @@ contract TokenBuyInterface {
     function extractTokens(address _tokenToExtract, uint256 _amount) public;
     function extractEth() public;
     function sendTokensCreditCard(address _to, uint256 _amount) public;
-    function calculateHowManyTokensYouCanBuyWithEth(uint256 _tokensToBuy) public view returns(uint256);
     function ovrToken() public returns(address);
-    function tokensPerEth() public returns(uint256);
     function tokensPerUsd() public returns(uint256);
     function daiToken() public returns(address);
     function usdtToken() public returns(address);
     function usdcToken() public returns(address);
+    function ethPrice() public returns(uint256);
 }

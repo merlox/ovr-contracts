@@ -235,13 +235,12 @@ contract TokenBuyInterface {
     function extractTokens(address _tokenToExtract, uint256 _amount) public;
     function extractEth() public;
     function sendTokensCreditCard(address _to, uint256 _amount) public;
-    function calculateHowManyTokensYouCanBuyWithEth(uint256 _tokensToBuy) public view returns(uint256);
     function ovrToken() public returns(address);
-    function tokensPerEth() public returns(uint256);
     function tokensPerUsd() public returns(uint256);
     function daiToken() public returns(address);
     function usdtToken() public returns(address);
     function usdcToken() public returns(address);
+    function ethPrice() public returns(uint256);
 }
 
 contract IERC721 is IERC165 {
@@ -331,11 +330,6 @@ contract ICO is Ownable, Pausable, IERC721Receiver {
     address public ovrToken;
     address public ovrLand;
     address public tokenBuy;
-    address public dai;
-    address public usdt;
-    address public usdc;
-    uint256 public tokensPerUsd;
-    uint256 public tokensPerEth;
 
     address public approved;
 
@@ -666,7 +660,7 @@ contract ICO is Ownable, Pausable, IERC721Receiver {
     }
 }
 
-contract ICOParticipate is Pausable {
+contract ICOParticipate is Ownable, Pausable {
     using SafeMath for uint256;
 
     event AuctionStarted(address indexed lastBidder, uint256 indexed landToBuy, uint256 paid, uint256 timestamp);
@@ -679,7 +673,7 @@ contract ICOParticipate is Pausable {
     IERC20 public usdt;
     IERC20 public usdc;
     uint256 public tokensPerUsd;
-    uint256 public tokensPerEth;
+    uint256 public ethPrice;
     ICO public ico;
 
     constructor (address _ico) public {
@@ -695,13 +689,13 @@ contract ICOParticipate is Pausable {
 
     function updateTokenBuyValues() public {
         tokensPerUsd = TokenBuyInterface(tokenBuy).tokensPerUsd();
-        tokensPerEth = TokenBuyInterface(tokenBuy).tokensPerEth();
+        ethPrice = TokenBuyInterface(tokenBuy).ethPrice();
     }
 
     function participate (uint256 _token, uint256 _bid, uint256 _landId) public payable whenNotPaused {
         updateTokenBuyValues();
         if (msg.value > 0) {
-            _bid = msg.value.mul(tokensPerEth);
+            _bid = msg.value.mul(ethPrice).div(tokensPerUsd).div(10);
         }
 
         require(ico.checkEpoch(_landId), "This land isn't available at the current epoch");
@@ -721,20 +715,20 @@ contract ICOParticipate is Pausable {
         }
     }
 
-
     function participateActiveAuction (uint256 _token, uint256 _bid, uint256 _landId) internal whenNotPaused {
         (address payable oldBidder,, uint256 oldBid,, ICO.AuctionState state,,,,,,, uint256 paidWith) = ico.lands(_landId);
         require(_bid >= oldBid.mul(2), 'Your bid must be equal or larger than double the previous one');
 
         
         if (paidWith == 0) {
-            oldBidder.transfer(oldBid.div(tokensPerEth));
+            uint256 ethToTransfer = oldBid.mul(tokensPerUsd).div(ethPrice).div(10);
+            oldBidder.transfer(ethToTransfer);
         } else if (paidWith == 1) {
-            dai.transfer(oldBidder, oldBid.div(tokensPerUsd));
+            dai.transfer(oldBidder, oldBid.div(tokensPerUsd).div(10));
         } else if (paidWith == 2) {
-            usdt.transfer(oldBidder, oldBid.div(tokensPerUsd));
+            usdt.transfer(oldBidder, oldBid.div(tokensPerUsd).div(10));
         } else if (paidWith == 3) {
-            usdc.transfer(oldBidder, oldBid.div(tokensPerUsd));
+            usdc.transfer(oldBidder, oldBid.div(tokensPerUsd).div(10));
         } else if (paidWith == 4) {
             ovrToken.transfer(oldBidder, oldBid);
         }
@@ -746,15 +740,24 @@ contract ICOParticipate is Pausable {
     function participateNewAuction (uint256 _token, uint256 _bid, uint256 _landId) internal whenNotPaused {
         ico.setLands(msg.sender, _landId, _bid, ICO.AuctionState.ACTIVE, _token);
         if (_token == 1) {
-            dai.transferFrom(msg.sender, address(this), _bid.div(tokensPerUsd));
+            dai.transferFrom(msg.sender, address(this), _bid.div(tokensPerUsd).div(10));
         } else if (_token == 2) {
-            usdt.transferFrom(msg.sender, address(this), _bid.div(tokensPerUsd));
+            usdt.transferFrom(msg.sender, address(this), _bid.div(tokensPerUsd).div(10));
         } else if (_token == 3) {
-            usdc.transferFrom(msg.sender, address(this), _bid.div(tokensPerUsd));
+            usdc.transferFrom(msg.sender, address(this), _bid.div(tokensPerUsd).div(10));
         } else if (_token == 4) {
             ovrToken.transferFrom(msg.sender, address(this), _bid);
         }
         ico.pushActiveLand(_landId);
         emit AuctionStarted(msg.sender, _landId, _bid, now);
+    }
+
+    
+    function extractTokens(address _tokenToExtract, uint256 _amount) public onlyOwner whenNotPaused {
+        IERC20(_tokenToExtract).transfer(owner, _amount);
+    }
+
+    function extractEth() public onlyOwner whenNotPaused {
+        owner.transfer(address(this).balance);
     }
 }
