@@ -99,7 +99,7 @@ contract TokenBuy is Ownable, Pausable, usingProvable {
     function buyTokensWithEth() public payable pricesMustBeSet whenNotPaused {
         require(msg.value > 0, "You must send a value to buy tokens with ETH");
         // Check how much value has been sent and send the corresponding value
-        uint256 tokensToBuy = msg.value.mul(ethPrice).div(tokensPerUsd).div(10);
+        uint256 tokensToBuy = msg.value.mul(ethPrice).mul(10).div(tokensPerUsd);
         IERC20(ovrToken).transfer(msg.sender, tokensToBuy);
         emit TokenPurchase(msg.sender, tokensToBuy, msg.value, 'ETH');
     }

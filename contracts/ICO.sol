@@ -467,7 +467,7 @@ contract ICOParticipate is Ownable, Pausable {
     function participate (uint256 _token, uint256 _bid, uint256 _landId) public payable whenNotPaused {
         updateTokenBuyValues();
         if (msg.value > 0) {
-            _bid = msg.value.mul(ethPrice).div(tokensPerUsd).div(10);
+            _bid = msg.value.mul(ethPrice).mul(10).div(tokensPerUsd);
         }
 
         require(ico.checkEpoch(_landId), "This land isn't available at the current epoch");
@@ -493,7 +493,7 @@ contract ICOParticipate is Ownable, Pausable {
 
         // Return previous bidder's tokens
         if (paidWith == 0) {
-            uint256 ethToTransfer = oldBid.mul(tokensPerUsd).div(ethPrice).div(10);
+            uint256 ethToTransfer = oldBid.mul(tokensPerUsd).mul(10).div(ethPrice);
             oldBidder.transfer(ethToTransfer);
         } else if (paidWith == 1) {
             dai.transfer(oldBidder, oldBid.div(tokensPerUsd).div(10));
