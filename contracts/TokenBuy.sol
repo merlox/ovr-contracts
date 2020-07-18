@@ -42,7 +42,7 @@ contract TokenBuy is Ownable, Pausable, usingProvable {
     address public ovrToken;
     // You get X tokens for 1 USD where X is this variable
     uint256 public tokensPerUsd = 2; // 0.2 usd is 1 token
-    uint256 public ethPrice;
+    uint256 public ethPrice = 240; // Temporary initial price until it gets updated by the oracle
 
 
     mapping(bytes32=>bool) validIds;
@@ -69,7 +69,8 @@ contract TokenBuy is Ownable, Pausable, usingProvable {
         usdtToken = _usdtToken;
         ovrToken = _ovrToken;
 
-        updatePrice();
+        // TODO ENABLE THIS
+        // updatePrice();
     }
 
     function updatePrice() public payable {

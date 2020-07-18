@@ -187,7 +187,7 @@
                         "name": "msg",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 12657,
+                        "referencedDeclaration": 12655,
                         "src": "158:3:2",
                         "typeDescriptions": {
                           "typeIdentifier": "t_magic_message",
@@ -271,7 +271,7 @@
                         "name": "msg",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 12657,
+                        "referencedDeclaration": 12655,
                         "src": "209:3:2",
                         "typeDescriptions": {
                           "typeIdentifier": "t_magic_message",
@@ -598,7 +598,7 @@
                         "name": "msg",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 12657,
+                        "referencedDeclaration": 12655,
                         "src": "158:3:2",
                         "typeDescriptions": {
                           "typeIdentifier": "t_magic_message",
@@ -682,7 +682,7 @@
                         "name": "msg",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 12657,
+                        "referencedDeclaration": 12655,
                         "src": "209:3:2",
                         "typeDescriptions": {
                           "typeIdentifier": "t_magic_message",
@@ -894,8 +894,8 @@
       "transactionHash": "0x87e03188cd46cc6d09b4cf6ceb977d9ec8de2481e512810d62876366c3a8a365"
     }
   },
-  "schemaVersion": "3.1.0",
-  "updatedAt": "2020-07-15T20:40:09.406Z",
+  "schemaVersion": "3.2.2",
+  "updatedAt": "2020-07-18T15:00:39.204Z",
   "networkType": "ethereum",
   "devdoc": {
     "methods": {}

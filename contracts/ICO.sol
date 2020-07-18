@@ -493,8 +493,8 @@ contract ICOParticipate is Ownable, Pausable {
 
         // Return previous bidder's tokens
         if (paidWith == 0) {
-            uint256 ethToTransfer = oldBid.mul(tokensPerUsd).mul(10).div(ethPrice);
-            oldBidder.transfer(ethToTransfer);
+            uint256 valueToTransfer = oldBid.div(ethPrice.mul(10).div(tokensPerUsd));
+            oldBidder.transfer(valueToTransfer);
         } else if (paidWith == 1) {
             dai.transfer(oldBidder, oldBid.div(tokensPerUsd).div(10));
         } else if (paidWith == 2) {
