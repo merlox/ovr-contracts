@@ -69,8 +69,7 @@ contract TokenBuy is Ownable, Pausable, usingProvable {
         usdtToken = _usdtToken;
         ovrToken = _ovrToken;
 
-        // TODO ENABLE THIS
-        // updatePrice();
+        updatePrice();
     }
 
     function updatePrice() public payable {
@@ -97,12 +96,13 @@ contract TokenBuy is Ownable, Pausable, usingProvable {
     }
 
     /// To buy tokens in ETH the payment will be received in the msg.value
-    function buyTokensWithEth() public payable pricesMustBeSet whenNotPaused {
+    function buyTokensWithEth(uint256 _tokenstoBuy) public payable pricesMustBeSet whenNotPaused {
         require(msg.value > 0, "You must send a value to buy tokens with ETH");
         // Check how much value has been sent and send the corresponding value
-        uint256 tokensToBuy = msg.value.mul(ethPrice).mul(10).div(tokensPerUsd);
-        IERC20(ovrToken).transfer(msg.sender, tokensToBuy);
-        emit TokenPurchase(msg.sender, tokensToBuy, msg.value, 'ETH');
+        uint256 calculatedTokensToBuy = msg.value.mul(ethPrice).mul(10).div(tokensPerUsd);
+        require(calculatedTokensToBuy >= _tokenstoBuy, 'You must send more or equal the value of tokens to buy');
+        IERC20(ovrToken).transfer(msg.sender, _tokenstoBuy);
+        emit TokenPurchase(msg.sender, _tokenstoBuy, msg.value, 'ETH');
     }
 
     /// To buy tokens in USDT the user must first approve an exceeding or equal amount of USDT tokens by the price to this contract

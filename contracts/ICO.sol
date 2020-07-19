@@ -467,7 +467,8 @@ contract ICOParticipate is Ownable, Pausable {
     function participate (uint256 _token, uint256 _bid, uint256 _landId) public payable whenNotPaused {
         updateTokenBuyValues();
         if (msg.value > 0) {
-            _bid = msg.value.mul(ethPrice).mul(10).div(tokensPerUsd);
+            uint256 calculatedBid = msg.value.mul(ethPrice).mul(10).div(tokensPerUsd) + 1;
+            require(calculatedBid >= _bid, 'You must send more or equal the value of tokens to buy');
         }
 
         require(ico.checkEpoch(_landId), "This land isn't available at the current epoch");
@@ -491,6 +492,17 @@ contract ICOParticipate is Ownable, Pausable {
         (address payable oldBidder,, uint256 oldBid,, ICO.AuctionState state,,,,,,, uint256 paidWith) = ico.lands(_landId);
         require(_bid >= oldBid.mul(2), 'Your bid must be equal or larger than double the previous one');
 
+        // Transfer the new tokens
+        if (_token == 1) {
+            dai.transferFrom(msg.sender, address(this), _bid.div(tokensPerUsd).div(10));
+        } else if (_token == 2) {
+            usdt.transferFrom(msg.sender, address(this), _bid.div(tokensPerUsd).div(10));
+        } else if (_token == 3) {
+            usdc.transferFrom(msg.sender, address(this), _bid.div(tokensPerUsd).div(10));
+        } else if (_token == 4) {
+            ovrToken.transferFrom(msg.sender, address(this), _bid);
+        }
+        
         // Return previous bidder's tokens
         if (paidWith == 0) {
             uint256 valueToTransfer = oldBid.div(ethPrice.mul(10).div(tokensPerUsd));
