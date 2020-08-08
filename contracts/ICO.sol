@@ -75,6 +75,7 @@ contract ICO is Ownable, Pausable, IERC721Receiver {
         bool hasBeenRedeemed;
         uint256 lastUpdateTimestamp;
         uint256 paidWith;
+        uint256 amountToReturn; // How many tokens or eth to return if outbidded
     }
 
     struct LandOffer {
@@ -336,9 +337,10 @@ contract ICO is Ownable, Pausable, IERC721Receiver {
         uint256 landToBuy,
         uint256 paid,
         AuctionState state,
-        uint256 paidWith
+        uint256 paidWith,
+        uint256 amountToReturn
     ) public onlyApproved {
-        lands[landToBuy] = Land(owner, landToBuy, paid, now, state, 0, false, 0, false, false, now, paidWith);
+        lands[landToBuy] = Land(owner, landToBuy, paid, now, state, 0, false, 0, false, false, now, paidWith, amountToReturn);
     }
 
     function pushActiveLand(uint256 _landId) public onlyApproved {
@@ -460,20 +462,20 @@ contract ICOParticipate is Ownable, Pausable {
     }
 
     function updateTokenBuyValues() public {
-        tokensPerUsd = TokenBuyInterface(tokenBuy).tokensPerUsd();
+        tokensPerUsd = TokenBuyInterface(tokenBuy).tokensPerUsd() / 2;
         ethPrice = TokenBuyInterface(tokenBuy).ethPrice();
     }
 
     function participate (uint256 _token, uint256 _bid, uint256 _landId) public payable whenNotPaused {
         updateTokenBuyValues();
         if (msg.value > 0) {
-            uint256 calculatedBid = msg.value.mul(ethPrice).mul(10).div(tokensPerUsd) + 1;
+            uint256 calculatedBid = msg.value.mul(ethPrice).mul(tokensPerUsd) + 1;
             require(calculatedBid >= _bid, 'You must send more or equal the value of tokens to buy');
         }
 
         require(ico.checkEpoch(_landId), "This land isn't available at the current epoch");
         require(_bid > 0 || msg.value > 0, "The bid can't be zero");
-        (,,, uint256 lastBidTimestamp, ICO.AuctionState state,,,,,,,) = ico.lands(_landId);
+        (,,, uint256 lastBidTimestamp, ICO.AuctionState state,,,,,,,,) = ico.lands(_landId);
 
         if (state == ICO.AuctionState.NOT_STARTED) {
             require(_bid >= ico.initialLandBid(), 'The bid must be larger or equal the initial minimum');
@@ -489,46 +491,54 @@ contract ICOParticipate is Ownable, Pausable {
     }
 
     function participateActiveAuction (uint256 _token, uint256 _bid, uint256 _landId) internal whenNotPaused {
-        (address payable oldBidder,, uint256 oldBid,, ICO.AuctionState state,,,,,,, uint256 paidWith) = ico.lands(_landId);
+        (address payable oldBidder,, uint256 oldBid,, ICO.AuctionState state,,,,,,, uint256 paidWith, uint256 amountToReturn) = ico.lands(_landId);
         require(_bid >= oldBid.mul(2), 'Your bid must be equal or larger than double the previous one');
 
         // Transfer the new tokens
         if (_token == 1) {
-            dai.transferFrom(msg.sender, address(this), _bid.div(tokensPerUsd).div(10));
+            dai.transferFrom(msg.sender, address(this), _bid.div(tokensPerUsd));
         } else if (_token == 2) {
-            usdt.transferFrom(msg.sender, address(this), _bid.div(tokensPerUsd).div(10));
+            usdt.transferFrom(msg.sender, address(this), _bid.div(tokensPerUsd));
         } else if (_token == 3) {
-            usdc.transferFrom(msg.sender, address(this), _bid.div(tokensPerUsd).div(10));
+            usdc.transferFrom(msg.sender, address(this), _bid.div(tokensPerUsd));
         } else if (_token == 4) {
             ovrToken.transferFrom(msg.sender, address(this), _bid);
+        }
+
+        if (paidWith == 0) {
+            ico.setLands(msg.sender, _landId, _bid, state, _token, msg.value);
+        } else {
+            ico.setLands(msg.sender, _landId, _bid, state, _token, _bid.div(tokensPerUsd));
         }
         
         // Return previous bidder's tokens
         if (paidWith == 0) {
-            uint256 valueToTransfer = oldBid.div(ethPrice.mul(10).div(tokensPerUsd));
-            oldBidder.transfer(valueToTransfer);
+            oldBidder.transfer(amountToReturn);
         } else if (paidWith == 1) {
-            dai.transfer(oldBidder, oldBid.div(tokensPerUsd).div(10));
+            dai.transfer(oldBidder, amountToReturn);
         } else if (paidWith == 2) {
-            usdt.transfer(oldBidder, oldBid.div(tokensPerUsd).div(10));
+            usdt.transfer(oldBidder, amountToReturn);
         } else if (paidWith == 3) {
-            usdc.transfer(oldBidder, oldBid.div(tokensPerUsd).div(10));
+            usdc.transfer(oldBidder, amountToReturn);
         } else if (paidWith == 4) {
             ovrToken.transfer(oldBidder, oldBid);
         }
-
-        ico.setLands(msg.sender, _landId, _bid, state, _token);
         emit AuctionBid(msg.sender, oldBidder, _landId, _bid, now);
     }
 
     function participateNewAuction (uint256 _token, uint256 _bid, uint256 _landId) internal whenNotPaused {
-        ico.setLands(msg.sender, _landId, _bid, ICO.AuctionState.ACTIVE, _token);
+        if (_token == 0) {
+            ico.setLands(msg.sender, _landId, _bid, ICO.AuctionState.ACTIVE, _token, msg.value);
+        } else {
+            ico.setLands(msg.sender, _landId, _bid, ICO.AuctionState.ACTIVE, _token, _bid.div(tokensPerUsd));
+        }
+
         if (_token == 1) {
-            dai.transferFrom(msg.sender, address(this), _bid.div(tokensPerUsd).div(10));
+            dai.transferFrom(msg.sender, address(this), _bid.div(tokensPerUsd));
         } else if (_token == 2) {
-            usdt.transferFrom(msg.sender, address(this), _bid.div(tokensPerUsd).div(10));
+            usdt.transferFrom(msg.sender, address(this), _bid.div(tokensPerUsd));
         } else if (_token == 3) {
-            usdc.transferFrom(msg.sender, address(this), _bid.div(tokensPerUsd).div(10));
+            usdc.transferFrom(msg.sender, address(this), _bid.div(tokensPerUsd));
         } else if (_token == 4) {
             ovrToken.transferFrom(msg.sender, address(this), _bid);
         }

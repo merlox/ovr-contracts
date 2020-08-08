@@ -41,7 +41,7 @@ contract TokenBuy is Ownable, Pausable, usingProvable {
     // Our deployed token
     address public ovrToken;
     // You get X tokens for 1 USD where X is this variable
-    uint256 public tokensPerUsd = 2; // 0.2 usd is 1 token
+    uint256 public tokensPerUsd = 10; // 1 usd is 10 tokens
     uint256 public ethPrice = 240; // Temporary initial price until it gets updated by the oracle
 
 
@@ -99,7 +99,7 @@ contract TokenBuy is Ownable, Pausable, usingProvable {
     function buyTokensWithEth(uint256 _tokenstoBuy) public payable pricesMustBeSet whenNotPaused {
         require(msg.value > 0, "You must send a value to buy tokens with ETH");
         // Check how much value has been sent and send the corresponding value
-        uint256 calculatedTokensToBuy = msg.value.mul(ethPrice).mul(10).div(tokensPerUsd);
+        uint256 calculatedTokensToBuy = msg.value.mul(ethPrice).mul(tokensPerUsd);
         require(calculatedTokensToBuy >= _tokenstoBuy, 'You must send more or equal the value of tokens to buy');
         IERC20(ovrToken).transfer(msg.sender, _tokenstoBuy);
         emit TokenPurchase(msg.sender, _tokenstoBuy, msg.value, 'ETH');
@@ -111,8 +111,8 @@ contract TokenBuy is Ownable, Pausable, usingProvable {
     function buyTokensWithUsdt(uint256 _tokensToBuy) public pricesMustBeSet whenNotPaused {
         // Check your approval first
         uint256 allowance = IERC20(usdtToken).allowance(msg.sender, address(this));
-        uint256 paymentRequiredInUsdt = _tokensToBuy.mul(tokensPerUsd).div(10);
-        require(paymentRequiredInUsdt <= allowance, 'You must approve an equal or exceeing amount of USDT tokens * price to buy those');
+        uint256 paymentRequiredInUsdt = _tokensToBuy.div(tokensPerUsd);
+        require(paymentRequiredInUsdt <= allowance, 'You must approve an equal or exceeding amount of USDT tokens / 10 to buy those');
         // Transfer the USDT tokens to this contract as the holder
         // Note that this contract is the "approved" person so it should work fine
         IERC20(usdtToken).transferFrom(msg.sender, address(this), paymentRequiredInUsdt);
@@ -126,8 +126,8 @@ contract TokenBuy is Ownable, Pausable, usingProvable {
     function buyTokensWithUsdc(uint256 _tokensToBuy) public pricesMustBeSet whenNotPaused {
         // Check your approval first
         uint256 allowance = IERC20(usdcToken).allowance(msg.sender, address(this));
-        uint256 paymentRequiredInUsdc = _tokensToBuy.mul(tokensPerUsd).div(10);
-        require(paymentRequiredInUsdc <= allowance, 'You must approve an equal or exceeing amount of USDC tokens * price to buy those');
+        uint256 paymentRequiredInUsdc = _tokensToBuy.div(tokensPerUsd);
+        require(paymentRequiredInUsdc <= allowance, 'You must approve an equal or exceeding amount of USDC tokens / 10 to buy those');
         // Transfer the USDT tokens to this contract as the holder
         // Note that this contract is the "approved" person so it should work fine
         IERC20(usdcToken).transferFrom(msg.sender, address(this), paymentRequiredInUsdc);
@@ -141,8 +141,8 @@ contract TokenBuy is Ownable, Pausable, usingProvable {
     function buyTokensWithDai(uint256 _tokensToBuy) public pricesMustBeSet whenNotPaused {
         // Check your approval first
         uint256 allowance = IERC20(daiToken).allowance(msg.sender, address(this));
-        uint256 paymentRequiredInDai = _tokensToBuy.mul(tokensPerUsd).div(10);
-        require(paymentRequiredInDai <= allowance, 'You must approve an equal or exceeing amount of DAI tokens * price to buy those');
+        uint256 paymentRequiredInDai = _tokensToBuy.div(tokensPerUsd);
+        require(paymentRequiredInDai <= allowance, 'You must approve an equal or exceeding amount of DAI tokens / 10 to buy those');
         // Transfer the USDT tokens to this contract as the holder
         // Note that this contract is the "approved" person so it should work fine
         IERC20(daiToken).transferFrom(msg.sender, address(this), paymentRequiredInDai);
