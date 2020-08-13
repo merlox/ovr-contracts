@@ -89,12 +89,6 @@ contract TokenBuy is Ownable, Pausable, usingProvable {
         validIds[queryId] = true;
     }
 
-    /// To set the price per token for the given currency used as payment
-    function setTokenPrices(uint256 _tokensPerUsd) public whenNotPaused {
-        require(_tokensPerUsd != 0, "The token price can't be zero");
-        tokensPerUsd = _tokensPerUsd;
-    }
-
     /// To buy tokens in ETH the payment will be received in the msg.value
     function buyTokensWithEth(uint256 _tokenstoBuy) public payable pricesMustBeSet whenNotPaused {
         require(msg.value > 0, "You must send a value to buy tokens with ETH");
